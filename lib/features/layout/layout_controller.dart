@@ -16,7 +16,7 @@ class LayoutState {
 class LayoutController extends StateNotifier<LayoutState> {
   LayoutController() : super(LayoutState());
 
-  Future<void> setInit() async {
+  Future<void> setPhoneInit() async {
     await loadSvg('assets/images/phone.svg');
   }
 

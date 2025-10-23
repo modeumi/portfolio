@@ -21,7 +21,7 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    Future.microtask(() => ref.read(layoutControllerProvider.notifier).setInit());
+    Future.microtask(() => ref.read(layoutControllerProvider.notifier).setPhoneInit());
   }
 
   @override

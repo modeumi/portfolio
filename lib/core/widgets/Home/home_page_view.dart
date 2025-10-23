@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
-import 'package:portfolio/core/widgets/Home/home_icon.dart';
 import 'package:portfolio/core/widgets/Home/home_icon_field.dart';
 import 'package:portfolio/features/home/home_controller.dart';
 import 'package:utility/color.dart';
@@ -43,41 +42,7 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 30),
-                        width: double.infinity,
-                        child: GestureDetector(
-                          onTap: () {
-                            // title 로 이동
-                          },
-                          child: Column(
-                            spacing: 10,
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: app_width / 8,
-                                height: app_width / 8,
-                                padding: EdgeInsets.all(5),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: pMainColor,
-                                  // image: DecorationImage(image: AssetImage('images/profile_thumbnail.png')),
-                                ),
-                                child: Container(
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(image: AssetImage('images/profile_thumbnail.png')),
-                                  ),
-                                ),
-                              ),
-                              Text('내정보', style: black(20, FontWeight.w500)),
-                            ],
-                          ),
-                        ),
-                      ),
+                      HomeIconField(iconData: homeState.apps['profile'], showContent: true),
                       Spacer(),
                       HomeIconField(iconData: homeState.apps['mainMenu'], showContent: true),
                     ],

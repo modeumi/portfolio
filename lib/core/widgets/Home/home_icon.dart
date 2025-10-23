@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/features/home/home_controller.dart';
 import 'package:utility/textstyle.dart';
@@ -23,17 +24,21 @@ class _HomeIconState extends ConsumerState<HomeIcon> {
       onTap: () {
         controller.tabIcon(widget.title);
       },
-      child: Column(
-        spacing: 10,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: app_width / 8,
-            height: app_width / 8,
-            child: ClipRRect(borderRadius: BorderRadiusGeometry.circular(20), child: SvgPicture.asset('images/${widget.title}.svg')),
-          ),
-          if (widget.showContent) Text(widget.content, style: black(20, FontWeight.w500)),
-        ],
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          spacing: 5,
+          mainAxisSize: MainAxisSize.min,
+          // crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: app_width / 8,
+              height: app_width / 8,
+              child: ClipRRect(borderRadius: BorderRadiusGeometry.circular(20), child: controller.buildImage(widget.title)),
+            ),
+            if (widget.showContent) Text(widget.content, style: black(18, FontWeight.w500)),
+          ],
+        ),
       ),
     );
   }

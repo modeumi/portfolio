@@ -1,8 +1,8 @@
 import 'package:blur/blur.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/core/widgets/Home/home_icon_field.dart';
@@ -156,6 +156,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                               ),
                             ),
                           ),
+                          for (int i = 0; i < Map.fromEntries(homeState.apps.values.expand((m) => m.entries)).values.length; i += 4)
+                            HomeIconField(iconData: controller.getAppsValue(i, i + 4), showContent: true),
                           Spacer(),
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 25),
@@ -189,7 +191,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     onPanUpdate: (details) => controller.menuClose('update', details),
                     onPanEnd: (details) => controller.menuClose('end', details),
                     child: Blur(
-                      blur: homeState.statusOpacity * 15,
+                      blur: homeState.statusOpacity * 20,
                       blurColor: color_grey,
                       colorOpacity: homeState.statusOpacity * 0.3,
                       child: Container(
@@ -232,7 +234,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 Text(date_to_string_MMdd('kor_date', DateTime.now()), style: black(20, FontWeight.w500)),
                                 Spacer(),
                                 // 로그인 아이콘 (실제 핸드폰 아이콘중 edit)
-                                GestureDetector(onTap: () {}, child: Icon(Icons.edit)),
+                                GestureDetector(onTap: () => context.go('/login'), child: Icon(Icons.edit)),
                                 GestureDetector(onTap: () => controller.setPower(false), child: Icon(Icons.power_settings_new)),
                               ],
                             ),

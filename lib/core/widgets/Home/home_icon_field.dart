@@ -10,15 +10,18 @@ class HomeIconField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 30),
+      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           for (int i = 0; i < 4; i++)
             if (iconData.length > i)
-              HomeIcon(iconData.keys.toList()[i], iconData[iconData.keys.toList()[i]], showContent)
+              Flexible(flex: 1, child: HomeIcon(iconData.keys.toList()[i], iconData[iconData.keys.toList()[i]], showContent))
             else
-              SizedBox(width: app_width / 8, height: app_width / 8),
+              Flexible(
+                flex: 1,
+                child: SizedBox(width: double.infinity, height: app_width / 8),
+              ),
         ],
       ),
     );
