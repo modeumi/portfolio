@@ -39,7 +39,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ? Column(
               spacing: 25,
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [LoadingIndicator(color: pMainColor)],
+              children: [LoadingIndicator(color: primary)],
             )
           : homeState.power == true
           ? Stack(

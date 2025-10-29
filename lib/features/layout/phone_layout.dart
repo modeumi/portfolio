@@ -30,7 +30,7 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> {
     return Scaffold(
       backgroundColor: pBackGrey,
       body: layoutState.loading
-          ? LoadingIndicator(color: pMainColor)
+          ? LoadingIndicator(color: primary)
           : Stack(
               children: [
                 if (layoutState.svgData != null)

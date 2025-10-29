@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
+import 'package:portfolio/features/login/login_controller.dart';
 import 'package:utility/color.dart';
 import 'package:utility/textstyle.dart';
 
@@ -41,13 +42,19 @@ class _FieldLayoutState extends ConsumerState<FieldLayout> {
                         text: TextSpan(
                           style: black(22, FontWeight.w600),
                           children: [
-                            TextSpan(text: 'Modeumi', style: custom(25, FontWeight.w800, pMainColor)),
+                            TextSpan(text: 'Modeumi', style: custom(25, FontWeight.w800, primary)),
                             TextSpan(text: '\'s'),
                             TextSpan(text: ' Portfolio'),
                           ],
                         ),
                       ),
-                      GestureDetector(onTap: () => context.push('/'), child: Icon(Icons.close, size: 35)),
+                      GestureDetector(
+                        onTap: () {
+                          ref.read(loginControllerProvider.notifier).resetState();
+                          context.go('/');
+                        },
+                        child: Icon(Icons.close, size: 35),
+                      ),
                     ],
                   ),
                 ),

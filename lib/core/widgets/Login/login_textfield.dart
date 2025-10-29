@@ -43,7 +43,7 @@ class _LoginTextfieldState extends State<LoginTextfield> {
                 child: TextField(
                   controller: widget.controller,
                   style: black(18, FontWeight.w500),
-                  cursorColor: pMainColor,
+                  cursorColor: primary,
                   onChanged: (value) {
                     widget.onChange();
                   },
@@ -54,7 +54,7 @@ class _LoginTextfieldState extends State<LoginTextfield> {
                     border: InputBorder.none,
                     hintText: '${widget.content}를 입력해주세요.',
                     hintStyle: custom(18, FontWeight.w500, color_grey),
-                    focusColor: pMainColor,
+                    focusColor: primary,
                   ),
                 ),
               ),

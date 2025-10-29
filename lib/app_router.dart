@@ -5,6 +5,7 @@ import 'package:portfolio/features/layout/field_layout.dart';
 import 'package:portfolio/features/loading/loading_page.dart';
 import 'package:portfolio/features/layout/phone_layout.dart';
 import 'package:portfolio/features/login/login_page.dart';
+import 'package:portfolio/features/manage/manage_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -23,7 +24,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) {
           return FieldLayout(child);
         },
-        routes: [GoRoute(path: '/login', builder: (context, state) => LoginPage())],
+        routes: [
+          GoRoute(path: '/login', builder: (context, state) => LoginPage()),
+          GoRoute(path: '/manage', builder: (context, state) => ManagePage()),
+        ],
       ),
     ],
   );

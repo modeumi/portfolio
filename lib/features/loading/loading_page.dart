@@ -46,7 +46,7 @@ class _LoadingPageState extends ConsumerState<LoadingPage> {
                       child: LinearProgressIndicator(
                         value: loadingState.loadingPercent / 100, // 0~1 사이 값, null이면 indeterminate 모드
                         backgroundColor: color_white,
-                        color: pMainColor,
+                        color: primary,
                       ),
                     ),
                   ),
