@@ -84,6 +84,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           obscure: true,
                           width: double.infinity,
                           onChange: () => controller.setInputData('password', password.text),
+                          onSubmitted: (value) {
+                            controller.login(context);
+                          },
                         ),
                         Text(loginState.wrongMessage, style: custom(20, FontWeight.w500, color_red)),
                       ],

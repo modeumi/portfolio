@@ -1,24 +1,23 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
-import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
 
 // 상태 객체 (데이터 Model) >> 여기에서는 loading 상태와 게시글 목록을 관리함
 class HomeState {
   final bool loading;
-  final String clock;
+  final String clock; //
   final bool power;
   final bool statusOpen;
-  final bool menuOpen;
-  final double startDy;
-  final double endDy;
-  final double valueDy;
-  final double statusOpacity;
+  final bool menuOpen; //
+  final double startDy; //
+  final double endDy; //
+  final double valueDy; //
+  final double statusOpacity; //
   final double menuOpacity;
   final int pageNumber;
   final Map<String, dynamic> apps = {
@@ -64,8 +63,8 @@ class HomeState {
   }) {
     return HomeState(
       loading: loading ?? this.loading,
-      clock: clock ?? this.clock,
       power: power ?? this.power,
+      clock: clock ?? this.clock,
       statusOpen: statusOpen ?? this.statusOpen,
       menuOpen: menuOpen ?? this.menuOpen,
       startDy: startDy ?? this.startDy,
@@ -84,14 +83,6 @@ class HomeController extends StateNotifier<HomeState> {
 
   HomeController() : super(HomeState());
 
-  void setClock() async {
-    Timer.periodic(Duration(seconds: 1), (Timer t) {
-      final now = DateTime.now();
-      final formattedTime = time_to_string_HHmm(now);
-      state = state.copyWith(clock: formattedTime);
-    });
-  }
-
   void setPower(bool power) {
     if (power) {
       state = state.copyWith(power: true);
@@ -100,27 +91,7 @@ class HomeController extends StateNotifier<HomeState> {
     }
   }
 
-  void tapHome() {
-    state = state.copyWith(valueDy: 0.0, statusOpen: false, statusOpacity: 0.0, pageNumber: 0, menuOpen: false, menuOpacity: 0);
-    // 해당 if 문은 menuOpen에 따라 CarouselSlider의 활성 여부가 갈리며, 그에 따라 완전 빌드 이전에 jump나 animated가 되는것을 막는다
-    if (state.menuOpen) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        pushPageIcon(0);
-      });
-    }
-  }
-
-  void tabBack() {
-    if (state.statusOpen) {
-      state = state.copyWith(valueDy: 0.0, statusOpen: false, statusOpacity: 0.0);
-    } else if (state.menuOpen) {
-      state = state.copyWith(menuOpen: false, menuOpacity: 0);
-      // } else if (state.pageNumber == 1) {
-      //   pushPageIcon(0);
-    }
-  }
-
-  void tabIcon(String title) async {
+  void tabIcon(BuildContext context, String title) async {
     if (title == 'apps') {
       int pageNum = state.pageNumber;
       state = state.copyWith(menuOpen: true, menuOpacity: 1, pageNumber: pageNum);
@@ -133,6 +104,18 @@ class HomeController extends StateNotifier<HomeState> {
       )) {
         throw 'Could not launch $url';
       }
+    } else {
+      context.go('/$title');
+    }
+  }
+
+  void tabBack() {
+    if (state.menuOpen) {
+      state = state.copyWith(menuOpen: false, menuOpacity: 0);
+    } else if (state.pageNumber == 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        pushPageIcon(0);
+      });
     }
   }
 
@@ -154,7 +137,7 @@ class HomeController extends StateNotifier<HomeState> {
     }
   }
 
-  void menuClose(String type, var details) {
+  void statusClose(String type, var details) {
     if (type == 'start') {
       state = state.copyWith(startDy: details.globalPosition.dy, valueDy: app_height);
     } else if (type == 'update') {

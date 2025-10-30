@@ -9,6 +9,7 @@ class LoginTextfield extends StatefulWidget {
   final TextEditingController controller;
   final bool obscure;
   final VoidCallback onChange;
+  final ValueChanged<String>? onSubmitted;
   const LoginTextfield({
     super.key,
     required this.content,
@@ -16,6 +17,7 @@ class LoginTextfield extends StatefulWidget {
     required this.obscure,
     required this.width,
     required this.onChange,
+    this.onSubmitted,
   });
 
   @override
@@ -41,6 +43,7 @@ class _LoginTextfieldState extends State<LoginTextfield> {
               child: TextSelectionTheme(
                 data: TextSelectionThemeData(selectionHandleColor: samchully_main_1),
                 child: TextField(
+                  onSubmitted: widget.onSubmitted,
                   controller: widget.controller,
                   style: black(18, FontWeight.w500),
                   cursorColor: primary,

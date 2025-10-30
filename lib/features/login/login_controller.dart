@@ -7,18 +7,18 @@ class LoginState {
   final String id;
   final String password;
   final String wrongMessage;
-  final User? user;
   final bool confirm; // id & pw 입력 여부 bool
+  final bool loading;
 
-  LoginState({this.id = '', this.password = '', this.wrongMessage = '', this.confirm = false, this.user});
+  LoginState({this.id = '', this.password = '', this.wrongMessage = '', this.confirm = false, this.loading = false});
 
-  LoginState copyWith({String? id, String? password, String? wrongMessage, bool? confirm, User? user}) {
+  LoginState copyWith({String? id, String? password, String? wrongMessage, bool? confirm, bool? loading}) {
     return LoginState(
       id: id ?? this.id,
       password: password ?? this.password,
       wrongMessage: wrongMessage ?? this.wrongMessage,
       confirm: confirm ?? this.confirm,
-      user: user ?? this.user,
+      loading: loading ?? this.loading,
     );
   }
 }
@@ -26,13 +26,15 @@ class LoginState {
 class LoginController extends StateNotifier<LoginState> {
   LoginController() : super(LoginState());
 
+  final auth = FirebaseAuth.instance;
+
   void resetState() {
     state = state.copyWith(id: '', password: '', confirm: false, wrongMessage: '');
   }
 
   void initState(BuildContext context) {
-    print('유저데이터 ${state.user}');
-    if (state.user != null) {
+    User? user = auth.currentUser;
+    if (user != null) {
       context.go('/manage');
     }
   }
@@ -47,21 +49,21 @@ class LoginController extends StateNotifier<LoginState> {
   }
 
   Future<void> login(BuildContext context) async {
+    state = state.copyWith(loading: false);
     try {
-      final auth = FirebaseAuth.instance;
       await auth.signInWithEmailAndPassword(email: state.id, password: state.password);
 
-      state = state.copyWith(wrongMessage: '', user: auth.currentUser);
+      state = state.copyWith(wrongMessage: '');
 
       context.go('/manage');
     } catch (e) {
       state = state.copyWith(wrongMessage: '아이디 혹은 비밀번호가 존재하지 않습니다.');
     }
+    state = state.copyWith(loading: true);
   }
 
   Future<void> logout(BuildContext context) async {
-    state = state.copyWith(user: null);
-    await FirebaseAuth.instance.signOut();
+    await auth.signOut();
     context.go('/login');
   }
 }

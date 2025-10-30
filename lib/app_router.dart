@@ -6,6 +6,7 @@ import 'package:portfolio/features/loading/loading_page.dart';
 import 'package:portfolio/features/layout/phone_layout.dart';
 import 'package:portfolio/features/login/login_page.dart';
 import 'package:portfolio/features/manage/manage_page.dart';
+import 'package:portfolio/features/message/message_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -18,6 +19,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(path: '/loading', builder: (context, state) => LoadingPage()),
           GoRoute(path: '/', builder: (context, state) => HomePage()),
+          GoRoute(path: '/message', builder: (context, state) => MessagePage()),
         ],
       ),
       ShellRoute(
