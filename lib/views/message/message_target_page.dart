@@ -6,6 +6,7 @@ import 'package:portfolio/core/widgets/custom_text_field.dart';
 import 'package:portfolio/controllers/message_controller.dart';
 import 'package:utility/color.dart';
 import 'package:utility/import_package.dart';
+import 'package:utility/modal_widget.dart';
 import 'package:utility/textstyle.dart';
 
 class MessageTargetPage extends ConsumerStatefulWidget {
@@ -18,15 +19,6 @@ class MessageTargetPage extends ConsumerStatefulWidget {
 class _MessageTargetPageState extends ConsumerState<MessageTargetPage> {
   TextEditingController search = TextEditingController();
   String before = '';
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    search.addListener(() {
-      setState(() {});
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +58,20 @@ class _MessageTargetPageState extends ConsumerState<MessageTargetPage> {
           if (search.text != '')
             GestureDetector(
               onTap: () {
-                controller.searchTarget(context, search.text);
+                if (search.text.toLowerCase() == 'modeumi') {
+                  showDialog(
+                    context: context,
+                    builder: (context) => ModalWidget(
+                      title: '이름 오류',
+                      content: '해당 이름은 사용하실 수 없습니다.\n다른 이름으로 다시 시도해주세요.',
+                      width: 400,
+                      action: () {},
+                      select_button: true,
+                    ),
+                  );
+                } else {
+                  controller.searchTarget(context, search.text);
+                }
               },
               child: Container(
                 constraints: BoxConstraints(maxHeight: double.infinity),

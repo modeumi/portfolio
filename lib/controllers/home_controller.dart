@@ -9,9 +9,10 @@ import 'package:utility/import_package.dart';
 // 상태 객체 (데이터 Model) >> 여기에서는 loading 상태와 게시글 목록을 관리함
 class HomeState {
   final bool loading;
-  final bool menuOpen; //
+  final bool menuOpen;
   final double menuOpacity;
   final int pageNumber;
+  final bool initHome;
   final Map<String, dynamic> apps = {
     'bottomMenu': {'reminder': '리마인드', 'note': '노트', 'message': '채팅', 'apps': '앱스'}, // 하단에 띄울 앱, 이름 미출력
     'mainMenu': {'notion': 'Notion', 'github': 'GitHub', 'blog': '네이버 블로그'}, // 메인화면에 출력할 주요 앱
@@ -26,14 +27,15 @@ class HomeState {
     'discord': 'https://discord.com/users/393283108146774018',
   };
 
-  HomeState({this.loading = true, this.menuOpen = false, this.menuOpacity = 0.0, this.pageNumber = 0});
+  HomeState({this.loading = true, this.initHome = false, this.menuOpen = false, this.menuOpacity = 0.0, this.pageNumber = 0});
 
-  HomeState copyWith({bool? loading, bool? menuOpen, double? menuOpacity, int? pageNumber}) {
+  HomeState copyWith({bool? loading, bool? menuOpen, bool? initHome, double? menuOpacity, int? pageNumber}) {
     return HomeState(
       loading: loading ?? this.loading,
       menuOpen: menuOpen ?? this.menuOpen,
       menuOpacity: menuOpacity ?? this.menuOpacity,
       pageNumber: pageNumber ?? this.pageNumber,
+      initHome: initHome ?? this.initHome,
     );
   }
 }
@@ -43,6 +45,10 @@ class HomeController extends StateNotifier<HomeState> {
   final CarouselSliderController pageController = CarouselSliderController();
 
   HomeController() : super(HomeState());
+
+  void initHome() {
+    state = state.copyWith(initHome: true);
+  }
 
   void tabIcon(BuildContext context, String title) async {
     if (title == 'apps') {

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/controllers/layout_controller.dart';
 import 'package:portfolio/controllers/message_controller.dart';
-import 'package:portfolio/views/message/message_thumnail.dart';
+import 'package:portfolio/views/message/widgets/message_thumnail.dart';
 import 'package:utility/color.dart';
 import 'package:utility/import_package.dart';
 import 'package:utility/textstyle.dart';
@@ -59,7 +59,9 @@ class _MessageListPageState extends ConsumerState<MessageListPage> {
                 child: Stack(
                   children: [
                     if (messageState.targets.isNotEmpty)
-                      Column(spacing: 10, children: [for (var i in messageState.targets) MessageThumnail(model: i)])
+                      SingleChildScrollView(
+                        child: Column(spacing: 10, children: [for (var i in messageState.targets) MessageThumnail(model: i)]),
+                      )
                     else
                       Center(child: Text('진행중인 채팅 내역이 없습니다.', style: grey(25, FontWeight.w500))),
                     Positioned(

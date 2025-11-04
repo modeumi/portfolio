@@ -5,7 +5,9 @@ import 'package:portfolio/controllers/layout_controller.dart';
 import 'package:portfolio/controllers/message_controller.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/widgets/custom_text_field.dart';
+import 'package:portfolio/views/message/widgets/message_field.dart';
 import 'package:utility/color.dart';
+import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
 import 'package:utility/modal_widget.dart';
 import 'package:utility/textstyle.dart';
@@ -20,10 +22,11 @@ class MessageChatPage extends ConsumerStatefulWidget {
 class _MessageChatPageState extends ConsumerState<MessageChatPage> {
   TextEditingController content = TextEditingController();
   TextEditingController password = TextEditingController();
-  bool lock = false;
+  TextEditingController lockPassword = TextEditingController();
   bool showMessage = false;
   bool admin = false;
   bool answer = false;
+  bool lock = false;
   String message = '비밀번호를 입력해주세요.';
 
   @override
@@ -34,6 +37,7 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> {
       setState(() {
         admin = ref.read(messageControllerProvider.notifier).checkAdmin();
       });
+      ref.read(messageControllerProvider.notifier).loadChat();
     });
   }
 
@@ -82,8 +86,6 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> {
                         onTap: () {
                           setState(() {
                             answer = !answer;
-                            showMessage = false;
-                            password.clear();
                           });
                         },
                         child: Icon(answer ? Icons.check_box : Icons.check_box_outline_blank_rounded, color: answer ? pBackBlack : color_grey),
@@ -91,40 +93,140 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> {
                       Text('답변', style: grey(18, FontWeight.w500)),
                     ],
                   ),
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          lock = !lock;
-                        });
-                      },
-                      child: Icon(lock ? Icons.check_box : Icons.check_box_outline_blank_rounded, color: lock ? pBackBlack : color_grey),
-                    ),
-                    Text('비공개', style: grey(18, FontWeight.w500)),
-                    GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => ModalWidget(
-                            title: '안내',
-                            content: '비공개를 선택 시 해당 채팅에 진입 할 때 비밀번호를 입력해야 열람 및 채팅 입력이 가능합니다.',
-                            width: 400,
-                            action: () {},
-                            select_button: true,
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    children: [
+                      if (messageState.target!.lastContent != null)
+                        GestureDetector(
+                          onTap: () {
+                            lockPassword.clear();
+                            bool validPassword = true;
+                            showDialog(
+                              context: context,
+                              builder: (context) => StatefulBuilder(
+                                builder: (context, setState) {
+                                  return ModalWidget(
+                                    title: '비밀번호 입력',
+                                    contentWidget: Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 30),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            padding: EdgeInsets.symmetric(horizontal: 10),
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(width: 1, color: color_grey),
+                                            ),
+                                            child: CustomTextField(controller: lockPassword, hint: '비밀번호 입력', obscure: true, maxLine: 1),
+                                          ),
+                                          validPassword ? Text('') : Text('비밀번호가 일치하지 않습니다', style: custom(18, FontWeight.w400, color_red)),
+                                        ],
+                                      ),
+                                    ),
+                                    width: 400,
+                                    action: () {
+                                      setState(() {
+                                        validPassword = controller.checkPassword(lockPassword.text);
+                                      });
+                                      if (validPassword) {
+                                        ref.read(layoutControllerProvider.notifier).withLoading(() async {
+                                          await controller.setLock();
+                                          Navigator.pop(context);
+                                        });
+                                      }
+                                    },
+                                    submitButtonContent: '확인',
+                                    cancleButtonContent: '취소',
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                          child: Icon(
+                            messageState.target!.lock! ? Icons.check_box : Icons.check_box_outline_blank_rounded,
+                            color: messageState.target!.lock! ? pBackBlack : color_grey,
                           ),
-                        );
-                      },
-                      child: Icon(Icons.info, color: color_grey),
-                    ),
-                  ],
+                        )
+                      else
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              lock = !lock;
+                            });
+                          },
+                          child: Icon(lock ? Icons.check_box : Icons.check_box_outline_blank_rounded, color: lock ? pBackBlack : color_grey),
+                        ),
+                      Text('비공개', style: grey(18, FontWeight.w500)),
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => ModalWidget(
+                              title: '안내',
+                              content: '비공개를 선택 시 해당 채팅에 진입 할 때 비밀번호를 입력해야 열람 및 채팅 입력이 가능합니다.',
+                              width: 400,
+                              action: () {},
+                              select_button: true,
+                            ),
+                          );
+                        },
+                        child: Icon(Icons.info, color: color_grey),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-
           // 메세지 출력 라인
-          Expanded(child: SingleChildScrollView(child: Column())),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                spacing: 10,
+                children: [
+                  for (var i in messageState.chats.entries)
+                    Column(
+                      spacing: 10,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5),
+                          child: Row(
+                            spacing: 15,
+                            children: [
+                              Flexible(
+                                child: Container(
+                                  width: double.infinity,
+                                  height: 1,
+                                  decoration: BoxDecoration(color: color_grey),
+                                ),
+                              ),
+                              Text(i.key, style: grey(15, FontWeight.w500)),
+                              Flexible(
+                                child: Container(
+                                  width: double.infinity,
+                                  height: 1,
+                                  decoration: BoxDecoration(color: color_grey),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        for (var j in i.value.entries)
+                          for (var k in j.value)
+                            MessageField(
+                              type: k.name == messageState.target!.name,
+                              time: reforme_time_short('m:', k.createAt!),
+                              content: k.message!,
+                              last: j.value.last == k,
+                            ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 3),
             child: Row(
@@ -194,21 +296,23 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> {
                 GestureDetector(
                   onTap: () async {
                     setState(() {
-                      if (password.text == '') {
-                        showMessage = true;
-                      } else {
-                        showMessage = false;
+                      if (!answer) {
+                        if (password.text == '') {
+                          showMessage = true;
+                        } else {
+                          showMessage = false;
+                        }
                       }
                     });
-                    if (content.text != '' && password.text != '') {
+                    if (content.text != '' && (password.text != '' || answer)) {
                       String result = '';
                       await layoutController.withLoading(() async {
-                        result = await controller.sendChat(content.text, password.text, lock, answer);
+                        result = await controller.sendChat(content.text, password.text, answer, lock);
                       });
                       if (result == 'pass') {
                         content.clear();
                         await layoutController.withLoading(() async {
-                          await controller.loadChat(messageState.target!.name!);
+                          await controller.loadChat();
                           await controller.loadChatList();
                         });
                       } else if (result == 'password') {

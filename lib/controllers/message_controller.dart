@@ -9,24 +9,24 @@ import 'package:portfolio/models/message_chat_model.dart';
 import 'package:portfolio/models/message_target_model.dart';
 import 'package:utility/crypto.dart';
 import 'package:utility/fire_base.dart';
+import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
-import 'package:utility/modal_widget.dart';
 
 class MessageState {
   final bool loading;
   final MessageTargetModel? target;
   final List<MessageTargetModel> targets;
   final List<MessageTargetModel> searchTargets;
-  final List<MessageChatModel> chats;
+  final Map<String, Map<String, List<MessageChatModel>>> chats;
 
   MessageState({
     this.loading = false,
     this.target,
     List<MessageTargetModel>? targets,
     List<MessageTargetModel>? searchTargets,
-    List<MessageChatModel>? chats,
+    Map<String, Map<String, List<MessageChatModel>>>? chats,
   }) : targets = targets ?? [],
-       chats = chats ?? [],
+       chats = chats ?? {},
        searchTargets = searchTargets ?? [];
 
   MessageState copyWith({
@@ -34,11 +34,11 @@ class MessageState {
     MessageTargetModel? target,
     List<MessageTargetModel>? targets,
     List<MessageTargetModel>? searchTargets,
-    List<MessageChatModel>? chats,
+    Map<String, Map<String, List<MessageChatModel>>>? chats,
   }) {
     return MessageState(
       loading: loading ?? this.loading,
-      target: target,
+      target: target ?? this.target,
       targets: targets ?? this.targets,
       searchTargets: searchTargets ?? this.searchTargets,
       chats: chats ?? this.chats,
@@ -62,17 +62,19 @@ class MessageController extends StateNotifier<MessageState> {
   }
 
   void searchTarget(BuildContext context, String search) {
-    state = state.copyWith(target: null);
+    MessageTargetModel model = MessageTargetModel();
     for (var i in state.targets) {
       if (i.name == search) {
-        state = state.copyWith(target: i);
+        model = i;
       }
     }
 
-    if (state.target == null) {
+    if (model.name == null) {
       String searchTarget = search.characters.take(15).toString();
-      state = state.copyWith(target: MessageTargetModel.fromMap({'name': searchTarget}));
+      model = model.copyWith(name: searchTarget, lock: false);
     }
+
+    state = state.copyWith(target: model);
 
     context.pop();
     context.push('/message_chat');
@@ -87,26 +89,38 @@ class MessageController extends StateNotifier<MessageState> {
     }
   }
 
-  Future<String> sendChat(String message, String password, bool lock, bool admin) async {
+  Future<String> sendChat(String message, String password, bool answer, bool lock) async {
     bool firstChat = state.chats.isEmpty;
     if (!firstChat) {
       String userPassword = cryption(false, state.target!.password!);
-      if (userPassword != password) {
+      if (userPassword != password && !answer) {
         return 'password';
       }
     }
 
     Map<String, String> times = Get_Times();
     String createAt = '${times['date']} ${times['time']}';
-    String user = admin ? 'Modeumi' : state.target!.name!;
+    String user = answer ? 'Modeumi' : state.target!.name!;
+
     Map<String, dynamic> messageData = {
-      createAt: {'user': user, 'message': message},
+      createAt: {'name': user, 'message': message},
     };
-    Map<String, dynamic> infoData = {'password': cryption(true, password), 'lock': lock, 'lastDate': times['date'], 'lastContent': message};
+
+    Map<String, dynamic> infoData = {'lastDate': times['date'], 'lastContent': message};
+
+    if (!answer) {
+      infoData['password'] = cryption(true, password);
+      infoData['lock'] = state.target!.lastContent != null ? state.target!.lock : lock;
+    }
 
     try {
-      await store.collection('Message').doc(state.target!.name).set(messageData, SetOptions(merge: true));
-      await store.collection('ChatUserInfo').doc(state.target!.name).set(messageData, SetOptions(merge: true));
+      await store.collection('Message').doc(state.target!.name!).set(messageData, SetOptions(merge: true));
+      if (!answer) {
+        await store.collection('ChatUserInfo').doc(state.target!.name!).set(infoData, SetOptions(merge: true));
+        MessageTargetModel model = MessageTargetModel.fromMap(infoData);
+        model = model.copyWith(name: state.target!.name);
+        state = state.copyWith(target: model);
+      }
       return 'pass';
     } catch (e) {
       print(e);
@@ -114,9 +128,60 @@ class MessageController extends StateNotifier<MessageState> {
     }
   }
 
-  Future<void> loadChat(String name) async {
-    DocumentSnapshot messages = await store.collection('Message').doc(name).get();
-    print(messages.data());
+  Future<void> loadChat() async {
+    try {
+      state = state.copyWith(chats: {});
+      DocumentSnapshot messages = await store.collection('Message').doc(state.target!.name).get();
+      if (messages.data() != null) {
+        Map<String, dynamic> result = messages.data() as Map<String, dynamic>;
+        List<String> key = result.keys.toList();
+
+        key.sort((a, b) {
+          DateTime aDate = DateTime.parse(a);
+          DateTime bDate = DateTime.parse(b);
+          return aDate.compareTo(bDate);
+        });
+        Map<String, dynamic> sortResult = {};
+        for (String k in key) {
+          sortResult[k] = result[k];
+        }
+
+        Map<String, Map<String, List<MessageChatModel>>> chats = {};
+        int userCount = 0;
+        int adminCount = 0;
+        for (var i in sortResult.entries) {
+          Map<String, dynamic> data = i.value;
+          String date = date_to_string_yyyyMMdd('kor_date', DateTime.parse(i.key));
+          String time = reforme_time_short('m:', i.key);
+          String keyTime = reforme_time_short(':', i.key);
+
+          if (!chats.containsKey(date)) {
+            chats[date] = {};
+          }
+          data['createAt'] = time;
+          // 각 list 생성부분에서 다른 count를 올려줌으로서 다음 채팅이 다른 사용자일때 다른 list를 만들어 저장해줌
+          if (i.value['name'] == state.target!.name) {
+            if (!chats[date]!.containsKey('user${userCount}_$keyTime')) {
+              chats[date]!['user${userCount}_$keyTime'] = [];
+              adminCount++;
+            }
+            MessageChatModel model = MessageChatModel.fromMap(data);
+            chats[date]!['user${userCount}_$keyTime']!.add(model);
+          } else {
+            if (!chats[date]!.containsKey('admin${adminCount}_$keyTime')) {
+              chats[date]!['admin${adminCount}_$keyTime'] = [];
+              userCount++;
+            }
+            MessageChatModel model = MessageChatModel.fromMap(data);
+            chats[date]!['admin${adminCount}_$keyTime']!.add(model);
+          }
+        }
+
+        state = state.copyWith(chats: chats);
+      }
+    } catch (e) {
+      print('채팅 로드 에러 : $e');
+    }
   }
 
   Future<void> loadChatList() async {
@@ -129,7 +194,6 @@ class MessageController extends StateNotifier<MessageState> {
 
         MessageTargetModel model = MessageTargetModel.fromMap(docs);
         models.add(model);
-        print(model.toMap());
       }
       state = state.copyWith(targets: models);
     } catch (e) {
@@ -138,6 +202,13 @@ class MessageController extends StateNotifier<MessageState> {
   }
 
   void setTarget(MessageTargetModel model) {
+    state = state.copyWith(target: model);
+  }
+
+  Future<void> setLock() async {
+    await store.collection('ChatUserInfo').doc(state.target!.name).set({'lock': !state.target!.lock!}, SetOptions(merge: true));
+    MessageTargetModel model = state.target!;
+    model = model.copyWith(lock: !model.lock!);
     state = state.copyWith(target: model);
   }
 

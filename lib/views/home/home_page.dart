@@ -22,6 +22,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(layoutControllerProvider.notifier).changeColor(false);
+      ref.read(homeControllerProvider.notifier).initHome();
     });
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:portfolio/controllers/home_controller.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/controllers/layout_controller.dart';
@@ -36,10 +37,14 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> {
     final layoutState = ref.watch(layoutControllerProvider);
     final controller = ref.read(layoutControllerProvider.notifier);
     final lodingState = ref.watch(loadingControllerProvider);
+    final homeState = ref.watch(homeControllerProvider);
     return Scaffold(
       backgroundColor: pBackGrey,
       body: layoutState.bootLoading
-          ? LoadingIndicator(color: primary)
+          ? Container(
+              decoration: BoxDecoration(color: pBackBlack),
+              child: LoadingIndicator(color: primary),
+            )
           : layoutState.power
           ? Stack(
               children: [
@@ -65,7 +70,7 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> {
                         borderRadius: BorderRadiusGeometry.circular(25),
                         child: Stack(
                           children: [
-                            Positioned.fill(child: Image.asset('assets/images/back.jpg', fit: BoxFit.fill)),
+                            if (homeState.initHome) Positioned.fill(child: Image.asset('assets/images/back.jpg', fit: BoxFit.fill)),
                             // 메인 위젯
                             widget.child,
                             // 오픈되지않은 스테이터스 바

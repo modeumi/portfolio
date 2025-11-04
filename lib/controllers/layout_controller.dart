@@ -96,7 +96,7 @@ class LayoutController extends StateNotifier<LayoutState> {
   void setClock() async {
     Timer.periodic(Duration(seconds: 1), (Timer t) {
       final now = DateTime.now();
-      final formattedTime = time_to_string_HHmm(now);
+      final formattedTime = time_to_string('hm', now);
       state = state.copyWith(clock: formattedTime);
     });
   }

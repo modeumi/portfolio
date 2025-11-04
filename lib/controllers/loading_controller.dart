@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
@@ -25,6 +26,10 @@ class LoadingController extends StateNotifier<LoadingState> {
     }
     await Future.delayed(const Duration(milliseconds: 200));
     context.go('/');
+  }
+
+  void initLogout() {
+    FirebaseAuth.instance.signOut();
   }
 
   Future<void> loadingIndicatior() async {

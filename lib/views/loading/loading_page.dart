@@ -18,7 +18,11 @@ class _LoadingPageState extends ConsumerState<LoadingPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    Future.microtask(() => ref.read(loadingControllerProvider.notifier).setLoading(context));
+    Future.microtask(() {
+      final controller = ref.read(loadingControllerProvider.notifier);
+      controller.setLoading(context);
+      controller.initLogout();
+    });
   }
 
   @override
@@ -28,7 +32,7 @@ class _LoadingPageState extends ConsumerState<LoadingPage> {
       backgroundColor: color_black,
       body: Center(
         child: SizedBox(
-          width: app_width,
+          width: app_width / 2,
           height: app_height,
           child: Column(
             spacing: 50,
