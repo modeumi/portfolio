@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:portfolio/core/app_setting.dart';
-import 'package:portfolio/features/home/home_controller.dart';
+import 'package:portfolio/controllers/home_controller.dart';
 import 'package:utility/textstyle.dart';
 
 class HomeIcon extends ConsumerStatefulWidget {

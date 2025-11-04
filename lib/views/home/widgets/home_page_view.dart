@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:portfolio/core/app_colors.dart';
-import 'package:portfolio/core/widgets/Home/home_icon_field.dart';
-import 'package:portfolio/features/home/home_controller.dart';
+import 'package:portfolio/views/home/widgets/home_icon_field.dart';
+import 'package:portfolio/controllers/home_controller.dart';
 import 'package:utility/color.dart';
 import 'package:utility/import_package.dart';
 import 'package:utility/textstyle.dart';

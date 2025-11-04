@@ -11,6 +11,9 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('ko_KR', null);
+
+  await dotenv.load(fileName: 'cryption.env');
+
   runApp(ProviderScope(child: MainApp()));
 }
 

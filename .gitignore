@@ -37,6 +37,7 @@ migrate_working_dir/
 
 # Firebase
 lib/core/firebase_options.dart
+lib/core/cryption.env
 firebase.json
 
 # Symbolication related

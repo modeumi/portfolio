@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
-import 'package:portfolio/core/widgets/Home/home_icon_field.dart';
-import 'package:portfolio/core/widgets/Home/home_page_view.dart';
-import 'package:portfolio/features/home/home_controller.dart';
-import 'package:portfolio/features/layout/layout_controller.dart';
-import 'package:utility/color.dart';
-import 'package:utility/textstyle.dart';
+import 'package:portfolio/views/home/widgets/home_icon_field.dart';
+import 'package:portfolio/views/home/widgets/home_page_view.dart';
+import 'package:portfolio/controllers/home_controller.dart';
+import 'package:portfolio/controllers/layout_controller.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -65,34 +63,6 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: SizedBox(
                 child: Column(
                   children: [
-                    Opacity(
-                      opacity: 1.0 - homeState.statusOpacity,
-                      child: GestureDetector(
-                        onPanStart: (details) => controller.statusOpen('start', details),
-                        onPanUpdate: (details) => controller.statusOpen('update', details),
-                        onPanEnd: (details) => controller.statusOpen('end', details),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          decoration: BoxDecoration(color: Colors.transparent),
-                          child: Row(
-                            spacing: 10,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text('Portfolio', style: white(18, FontWeight.w500)),
-                              Text(homeState.clock, style: white(18, FontWeight.w600)),
-                              Spacer(),
-                              Icon(Icons.signal_cellular_alt_outlined, color: color_white),
-                              Container(
-                                width: 50,
-                                padding: EdgeInsets.symmetric(vertical: 3),
-                                decoration: BoxDecoration(color: pBackGrey, borderRadius: BorderRadius.circular(30)),
-                                child: Center(child: Text('95', style: white(16, FontWeight.w600))),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                     for (int i = 0; i < Map.fromEntries(homeState.apps.values.expand((m) => m.entries)).values.length; i += 4)
                       HomeIconField(iconData: controller.getAppsValue(i, i + 4), showContent: true),
                   ],

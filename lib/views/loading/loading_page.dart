@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
-import 'package:portfolio/features/loading/loading_controller.dart';
+import 'package:portfolio/controllers/loading_controller.dart';
 import 'package:utility/color.dart';
 import 'package:utility/textstyle.dart';
 

@@ -8,12 +8,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_setting.dart';
-import 'package:portfolio/features/home/home_controller.dart';
-import 'package:portfolio/features/message/message_controller.dart';
+import 'package:portfolio/controllers/home_controller.dart';
+import 'package:portfolio/controllers/message_controller.dart';
 import 'package:utility/format.dart';
 
 class LayoutState {
-  final bool loading;
+  final bool bootLoading;
+  final bool actionLoading;
   final bool power;
   final bool statusOpen;
   final bool colorType;
@@ -27,7 +28,8 @@ class LayoutState {
   final double statusOpacity;
 
   const LayoutState({
-    this.loading = true,
+    this.bootLoading = false,
+    this.actionLoading = false,
     this.power = true,
     this.statusOpen = false,
     this.colorType = false,
@@ -42,7 +44,8 @@ class LayoutState {
   });
 
   LayoutState copyWith({
-    bool? loading,
+    bool? bootLoading,
+    bool? actionLoading,
     bool? power,
     bool? statusOpen,
     bool? colorType,
@@ -54,7 +57,8 @@ class LayoutState {
     double? statusOpacity,
   }) {
     return LayoutState(
-      loading: loading ?? this.loading,
+      bootLoading: bootLoading ?? this.bootLoading,
+      actionLoading: actionLoading ?? this.actionLoading,
       power: power ?? this.power,
       svgData: svgData ?? this.svgData,
       colorType: colorType ?? this.colorType,
@@ -80,11 +84,11 @@ class LayoutController extends StateNotifier<LayoutState> {
     try {
       // SVG 문자열 읽기
       final svgString = await rootBundle.loadString(assetPath);
-      // 로드 완료 시 loading false
-      state = state.copyWith(loading: false, svgData: svgString);
+      // 로드 완료 시 bootLoading false
+      state = state.copyWith(bootLoading: false, svgData: svgString);
     } catch (e) {
-      // 실패 시에도 loading false로 바꾸고 로그 출력
-      state = state.copyWith(loading: false);
+      // 실패 시에도 bootLoading false로 바꾸고 로그 출력
+      state = state.copyWith(bootLoading: false);
       print("SVG 로드 실패: $e");
     }
   }
@@ -105,6 +109,17 @@ class LayoutController extends StateNotifier<LayoutState> {
     }
   }
 
+  Future<void> withLoading(Future<void> Function() task) async {
+    state = state.copyWith(actionLoading: true);
+    try {
+      await task();
+    } catch (e, _) {
+      print("에러 발생: $e");
+    } finally {
+      state = state.copyWith(actionLoading: false);
+    }
+  }
+
   void tapHome() {
     state = state.copyWith(valueDy: 0.0, statusOpen: false, statusOpacity: 0.0);
     // 해당 if 문은 menuOpen에 따라 CarouselSlider의 활성 여부가 갈리며, 그에 따라 완전 빌드 이전에 jump나 animated가 되는것을 막는다
@@ -120,7 +135,7 @@ class LayoutController extends StateNotifier<LayoutState> {
   }
 
   void tabBack(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
+    final location = GoRouterState.of(context).uri.toString();
 
     if (state.statusOpen) {
       state = state.copyWith(valueDy: 0.0, statusOpen: false, statusOpacity: 0.0);
@@ -131,7 +146,7 @@ class LayoutController extends StateNotifier<LayoutState> {
       final controller = ref.read(messageControllerProvider.notifier);
       controller.tabBack(context);
     } else {
-      context.pop(context);
+      context.pop();
     }
   }
 

@@ -41,7 +41,7 @@ class _LoginTextfieldState extends State<LoginTextfield> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: TextSelectionTheme(
-                data: TextSelectionThemeData(selectionHandleColor: samchully_main_1),
+                data: TextSelectionThemeData(selectionHandleColor: primary),
                 child: TextField(
                   onSubmitted: widget.onSubmitted,
                   controller: widget.controller,

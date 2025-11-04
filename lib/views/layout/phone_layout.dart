@@ -5,10 +5,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
-import 'package:portfolio/features/layout/layout_controller.dart';
-import 'package:portfolio/features/loading/loading_controller.dart';
+import 'package:portfolio/controllers/layout_controller.dart';
+import 'package:portfolio/controllers/loading_controller.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
+import 'package:utility/import_package.dart';
 import 'package:utility/loading_indicator.dart';
 import 'package:utility/textstyle.dart';
 
@@ -37,7 +38,7 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> {
     final lodingState = ref.watch(loadingControllerProvider);
     return Scaffold(
       backgroundColor: pBackGrey,
-      body: layoutState.loading
+      body: layoutState.bootLoading
           ? LoadingIndicator(color: primary)
           : layoutState.power
           ? Stack(
@@ -163,7 +164,7 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> {
                                             Text(date_to_string_MMdd('kor_date', DateTime.now()), style: black(20, FontWeight.w500)),
                                             Spacer(),
                                             // 로그인 아이콘 (실제 핸드폰 아이콘중 edit)
-                                            GestureDetector(onTap: () => context.go('/login'), child: Icon(Icons.edit)),
+                                            GestureDetector(onTap: () => context.push('/login'), child: Icon(Icons.edit)),
                                             GestureDetector(onTap: () => controller.setPower(false), child: Icon(Icons.power_settings_new)),
                                           ],
                                         ),
@@ -222,6 +223,7 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> {
                                   ),
                                 ),
                               ),
+                            if (layoutState.actionLoading) Center(child: LoadingAnimationWidget.stretchedDots(color: primary, size: 30)),
                           ],
                         ),
                       ),

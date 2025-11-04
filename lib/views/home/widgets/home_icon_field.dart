@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:portfolio/core/app_setting.dart';
-import 'package:portfolio/core/widgets/Home/home_icon.dart';
+import 'package:portfolio/views/home/widgets/home_icon.dart';
 
 class HomeIconField extends StatelessWidget {
   final Map<String, dynamic> iconData;

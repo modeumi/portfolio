@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:portfolio/core/app_colors.dart';
-import 'package:portfolio/core/widgets/Login/login_textfield.dart';
-import 'package:portfolio/features/login/login_controller.dart';
+import 'package:portfolio/views/login/widgets/login_textfield.dart';
+import 'package:portfolio/controllers/login_controller.dart';
 import 'package:utility/color.dart';
 import 'package:utility/textstyle.dart';
 
