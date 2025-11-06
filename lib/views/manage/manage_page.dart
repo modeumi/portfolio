@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/controllers/login_controller.dart';
-import 'package:portfolio/controllers/manage_controller.dart';
+import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:utility/color.dart';
 import 'package:utility/modal_widget.dart';
 
@@ -15,7 +15,7 @@ class ManagePage extends ConsumerStatefulWidget {
   ConsumerState<ManagePage> createState() => _ManagePageState();
 }
 
-class _ManagePageState extends ConsumerState<ManagePage> {
+class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin {
   bool permission = false;
   @override
   void initState() {
@@ -24,6 +24,7 @@ class _ManagePageState extends ConsumerState<ManagePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
+        layoutController.changeDialogState(true);
         showDialog(
           context: context,
           builder: (context) => ModalWidget(
@@ -31,7 +32,11 @@ class _ManagePageState extends ConsumerState<ManagePage> {
             content: '권한이 없어 페이지에 접근하실 수 없습니다.\n로그인 페이지로 돌아갑니다.',
             width: 400,
             action: () {
+              layoutController.changeDialogState(false);
               context.go('/login');
+            },
+            cancle: () {
+              layoutController.changeDialogState(false);
             },
             select_button: true,
           ),
@@ -46,43 +51,55 @@ class _ManagePageState extends ConsumerState<ManagePage> {
 
   @override
   Widget build(BuildContext context) {
-    final manageState = ref.watch(manageControllerProvider);
-    final controller = ref.read(manageControllerProvider.notifier);
-    return permission
-        ? Container(
-            decoration: BoxDecoration(color: pWhite),
-            width: double.infinity,
-            child: Column(
-              children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(),
-                      GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => ModalWidget(
-                              title: '로그아웃',
-                              content: '로그아웃 하시겠습니까?',
-                              width: 300,
-                              action: () {
-                                Navigator.pop(context);
-                                ref.read(loginControllerProvider.notifier).logout(context);
-                              },
-                            ),
-                          );
-                        },
-                        child: Icon(Icons.logout, size: 35, color: color_black),
-                      ),
-                    ],
+    return PopScope(
+      canPop: layoutState.dialogOpen,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (layoutState.dialogOpen) {
+          layoutController.changeDialogState(false);
+        }
+      },
+      child: permission
+          ? Container(
+              decoration: BoxDecoration(color: pWhite),
+              width: double.infinity,
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(),
+                        GestureDetector(
+                          onTap: () {
+                            layoutController.changeDialogState(true);
+                            showDialog(
+                              context: context,
+                              builder: (context) => ModalWidget(
+                                title: '로그아웃',
+                                content: '로그아웃 하시겠습니까?',
+                                width: 300,
+                                action: () {
+                                  Navigator.pop(context);
+                                  layoutController.changeDialogState(false);
+                                  ref.read(loginControllerProvider.notifier).logout(context);
+                                },
+                                cancle: () {
+                                  layoutController.changeDialogState(false);
+                                },
+                              ),
+                            );
+                          },
+                          child: Icon(Icons.logout, size: 35, color: color_black),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          )
-        : Container();
+                ],
+              ),
+            )
+          : Container(),
+    );
   }
 }

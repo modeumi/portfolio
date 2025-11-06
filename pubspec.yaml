@@ -23,6 +23,9 @@ dependencies:
   blur: ^4.0.2
   firebase_auth: ^6.1.1
   characters: ^1.4.0
+  image_picker: ^1.2.0
+  firebase_storage: ^13.0.4
+  image_picker_for_web: ^3.1.0
 
 dev_dependencies:
   flutter_test:

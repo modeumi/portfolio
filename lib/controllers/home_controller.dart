@@ -4,17 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
+import 'package:portfolio/models/calendar_model.dart';
 import 'package:utility/import_package.dart';
 
 // 상태 객체 (데이터 Model) >> 여기에서는 loading 상태와 게시글 목록을 관리함
 class HomeState {
   final bool loading;
   final bool menuOpen;
-  final double menuOpacity;
-  final int pageNumber;
   final bool initHome;
+
+  final int pageNumber;
+
+  final double menuOpacity;
+
   final Map<String, dynamic> apps = {
-    'bottomMenu': {'reminder': '리마인드', 'note': '노트', 'message': '채팅', 'apps': '앱스'}, // 하단에 띄울 앱, 이름 미출력
+    'bottomMenu': {'note': '노트', 'message': '채팅', 'calendar': '캘린더', 'apps': '앱스'}, // 하단에 띄울 앱, 이름 미출력
     'mainMenu': {'notion': 'Notion', 'github': 'GitHub', 'blog': '네이버 블로그'}, // 메인화면에 출력할 주요 앱
     'profile': {'profile': '내정보'}, // 내정보 앱
     'sns': {'kakao': '카카오톡', 'discord': 'Discord'}, // 메인에는 출력하지않으나 앱스를 클릭했을때 출력할 앱

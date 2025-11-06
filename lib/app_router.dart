@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:portfolio/views/calendar/calendar_add_schedule.dart';
+import 'package:portfolio/views/calendar/calendar_page.dart';
 import 'package:portfolio/views/home/home_page.dart';
 import 'package:portfolio/views/layout/field_layout.dart';
 import 'package:portfolio/views/loading/loading_page.dart';
@@ -20,10 +22,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
         routes: [
           GoRoute(path: '/loading', builder: (context, state) => LoadingPage()),
+
           GoRoute(path: '/', builder: (context, state) => HomePage()),
+
           GoRoute(path: '/message', builder: (context, state) => MessageListPage()),
           GoRoute(path: '/message_target', builder: (context, state) => MessageTargetPage()),
           GoRoute(path: '/message_chat', builder: (context, state) => MessageChatPage()),
+
+          GoRoute(path: '/calendar', builder: (context, state) => CalendarPage()),
+          GoRoute(path: '/calendar_add_schedule', builder: (context, state) => CalendarAddSchedule()),
         ],
       ),
       ShellRoute(

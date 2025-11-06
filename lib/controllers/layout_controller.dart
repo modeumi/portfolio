@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
+import 'package:portfolio/controllers/calendar_controller.dart';
 import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/controllers/home_controller.dart';
 import 'package:portfolio/controllers/message_controller.dart';
@@ -18,6 +19,7 @@ class LayoutState {
   final bool power;
   final bool statusOpen;
   final bool colorType;
+  final bool dialogOpen;
 
   final String? svgData;
   final String clock;
@@ -33,6 +35,7 @@ class LayoutState {
     this.power = true,
     this.statusOpen = false,
     this.colorType = false,
+    this.dialogOpen = false,
 
     this.svgData,
     this.clock = '',
@@ -49,8 +52,11 @@ class LayoutState {
     bool? power,
     bool? statusOpen,
     bool? colorType,
+    bool? dialogOpen,
+
     String? svgData,
     String? clock,
+
     double? startDy,
     double? endDy,
     double? valueDy,
@@ -61,6 +67,7 @@ class LayoutState {
       actionLoading: actionLoading ?? this.actionLoading,
       power: power ?? this.power,
       svgData: svgData ?? this.svgData,
+      dialogOpen: dialogOpen ?? this.dialogOpen,
       colorType: colorType ?? this.colorType,
       clock: clock ?? this.clock,
       statusOpen: statusOpen ?? this.statusOpen,
@@ -134,6 +141,11 @@ class LayoutController extends StateNotifier<LayoutState> {
     state = state.copyWith(colorType: type);
   }
 
+  void backAndChangeColor(BuildContext context, bool type) {
+    changeColor(type);
+    context.pop();
+  }
+
   void tabBack(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
 
@@ -142,9 +154,14 @@ class LayoutController extends StateNotifier<LayoutState> {
     } else if (location == '/') {
       final controller = ref.read(homeControllerProvider.notifier);
       controller.tabBack();
-    } else if (location == '/message') {
-      final controller = ref.read(messageControllerProvider.notifier);
-      controller.tabBack(context);
+    } else if (['/message', '/calendar'].contains(location)) {
+      if (location == '/message') {
+        ref.invalidate(messageControllerProvider);
+      } else if (location == '/calendar') {
+        ref.invalidate(calendarControllerProvider);
+        // 이번달 데이터만 load 하는 코드추가
+      }
+      backAndChangeColor(context, false);
     } else {
       context.pop();
     }
@@ -191,6 +208,10 @@ class LayoutController extends StateNotifier<LayoutState> {
         state = state.copyWith(valueDy: 0.0, statusOpacity: 0.0, statusOpen: false);
       }
     }
+  }
+
+  void changeDialogState(bool type) {
+    state = state.copyWith(dialogOpen: type);
   }
 }
 

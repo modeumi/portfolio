@@ -1,40 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/custom_text_field.dart';
 import 'package:portfolio/models/message_target_model.dart';
-
 import 'package:utility/color.dart';
-import 'package:utility/format.dart';
 import 'package:utility/modal_widget.dart';
 import 'package:utility/textstyle.dart';
 
-class MessageThumnail extends ConsumerStatefulWidget {
+class MessageSearchField extends ConsumerStatefulWidget {
   final MessageTargetModel model;
-  const MessageThumnail({super.key, required this.model});
+  const MessageSearchField({super.key, required this.model});
 
   @override
-  ConsumerState<MessageThumnail> createState() => _MessageThumnailState();
+  ConsumerState<MessageSearchField> createState() => _MessageSearchFieldState();
 }
 
-class _MessageThumnailState extends ConsumerState<MessageThumnail> with RiverpodMixin {
-  TextEditingController password = TextEditingController();
-
+class _MessageSearchFieldState extends ConsumerState<MessageSearchField> with RiverpodMixin {
   @override
   Widget build(BuildContext context) {
-    // final messageState = ref.watch(messageControllerProvider);
-    // final controller = ref.read(messageControllerProvider.notifier);
-    // final LayoutController = ref.
     return GestureDetector(
-      onTap: () {
-        messageController.setTarget(widget.model);
-        password.clear();
-        bool admin = messageController.checkAdmin();
-        if (widget.model.lock! && !admin) {
+      onTap: () async {
+        if (widget.model.lock == true) {
+          TextEditingController password = TextEditingController();
           bool validPassword = true;
-          layoutController.changeDialogState(true);
-          showDialog(
+          bool? result = await showDialog(
             context: context,
             builder: (context) => StatefulBuilder(
               builder: (context, setState) {
@@ -43,8 +32,10 @@ class _MessageThumnailState extends ConsumerState<MessageThumnail> with Riverpod
                   contentWidget: Container(
                     padding: EdgeInsets.symmetric(horizontal: 30),
                     child: Column(
+                      spacing: 10,
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        Text('해당 이름의 채팅은 잠겨있습니다.\n입장하기위해 비밀번호를 입력주세요.', style: black(18, FontWeight.w500)),
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
@@ -60,13 +51,12 @@ class _MessageThumnailState extends ConsumerState<MessageThumnail> with Riverpod
                   width: 400,
                   action: () {
                     setState(() {
-                      validPassword = messageController.checkPassword(password.text);
-                      if (validPassword) {
-                        layoutController.changeDialogState(false);
-                        Navigator.pop(context);
-                        context.push('/message_chat');
-                      }
+                      validPassword = messageController.checkPassword(password.text, widget.model);
                     });
+                    if (validPassword) {
+                      layoutController.changeDialogState(false);
+                      Navigator.pop(context, true);
+                    }
                   },
                   cancle: () {
                     layoutController.changeDialogState(false);
@@ -77,35 +67,27 @@ class _MessageThumnailState extends ConsumerState<MessageThumnail> with Riverpod
               },
             ),
           );
+          if (result == true) {
+            messageController.setSearchTarget(context, widget.model.name!);
+          } else {
+            return;
+          }
         } else {
-          context.push('/message_chat');
+          messageController.setSearchTarget(context, widget.model.name!);
         }
       },
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         width: double.infinity,
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(width: 1, color: color_grey)),
+          border: Border(bottom: BorderSide(width: 0.5, color: color_grey)),
         ),
-        child: Column(
-          spacing: 3,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Row(
-              spacing: 10,
-              children: [
-                Text(widget.model.name!, style: black(20, FontWeight.w700)),
-                if (widget.model.lock!) Icon(Icons.lock, color: color_grey, size: 20),
-                Spacer(),
-                Text(date_to_string_yyyyMMdd('kor', widget.model.lastDate), style: grey(18, FontWeight.w500)),
-              ],
-            ),
-            Text(
-              widget.model.lock! ? '비공개 채팅입니다.' : widget.model.lastContent!,
-              style: grey(18, FontWeight.w500),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            Text(widget.model.name ?? '', style: black(23, FontWeight.w800)),
+            Text('최근 대화 : ${widget.model.lastDate ?? ''}', style: grey(17, FontWeight.w400), textAlign: TextAlign.end),
           ],
         ),
       ),

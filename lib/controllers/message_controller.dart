@@ -1,16 +1,20 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:portfolio/controllers/layout_controller.dart';
 import 'package:portfolio/models/message_chat_model.dart';
 import 'package:portfolio/models/message_target_model.dart';
 import 'package:utility/crypto.dart';
 import 'package:utility/fire_base.dart';
 import 'package:utility/format.dart';
-import 'package:utility/import_package.dart';
+import 'package:utility/import_package.dart' hide ImageSource;
+import 'package:utility/modal_widget.dart';
 
 class MessageState {
   final bool loading;
@@ -54,14 +58,11 @@ class MessageController extends StateNotifier<MessageState> {
 
   final store = FirebaseFirestore.instance;
 
-  void withLoading() {}
-
-  void tabBack(BuildContext context) {
-    context.pop();
-    ref.read(layoutControllerProvider.notifier).changeColor(false);
+  void setTarget(MessageTargetModel model) {
+    state = state.copyWith(target: model);
   }
 
-  void searchTarget(BuildContext context, String search) {
+  void setSearchTarget(BuildContext context, String search) async {
     MessageTargetModel model = MessageTargetModel();
     for (var i in state.targets) {
       if (i.name == search) {
@@ -78,6 +79,21 @@ class MessageController extends StateNotifier<MessageState> {
 
     context.pop();
     context.push('/message_chat');
+  }
+
+  void searchTarget(String search) {
+    if (search == '') {
+      List<MessageTargetModel> models = state.targets;
+      state = state.copyWith(searchTargets: models);
+    } else {
+      List<MessageTargetModel> models = [];
+      for (var i in state.targets) {
+        if (i.name!.contains(search)) {
+          models.add(i);
+        }
+      }
+      state = state.copyWith(searchTargets: models);
+    }
   }
 
   bool checkAdmin() {
@@ -106,7 +122,7 @@ class MessageController extends StateNotifier<MessageState> {
       createAt: {'name': user, 'message': message},
     };
 
-    Map<String, dynamic> infoData = {'lastDate': times['date'], 'lastContent': message};
+    Map<String, dynamic> infoData = {'lastDate': times['date'], 'lastContent': message.contains('portfolio-f7c58') ? '이미지' : message};
 
     if (!answer) {
       infoData['password'] = cryption(true, password);
@@ -128,9 +144,11 @@ class MessageController extends StateNotifier<MessageState> {
     }
   }
 
-  Future<void> loadChat() async {
+  Future<void> loadChat([bool? reset]) async {
     try {
-      state = state.copyWith(chats: {});
+      if (reset == true) {
+        state = state.copyWith(chats: {});
+      }
       DocumentSnapshot messages = await store.collection('Message').doc(state.target!.name).get();
       if (messages.data() != null) {
         Map<String, dynamic> result = messages.data() as Map<String, dynamic>;
@@ -201,10 +219,6 @@ class MessageController extends StateNotifier<MessageState> {
     }
   }
 
-  void setTarget(MessageTargetModel model) {
-    state = state.copyWith(target: model);
-  }
-
   Future<void> setLock() async {
     await store.collection('ChatUserInfo').doc(state.target!.name).set({'lock': !state.target!.lock!}, SetOptions(merge: true));
     MessageTargetModel model = state.target!;
@@ -212,12 +226,52 @@ class MessageController extends StateNotifier<MessageState> {
     state = state.copyWith(target: model);
   }
 
-  bool checkPassword(String password) {
-    String decryptPassword = cryption(false, state.target!.password!);
+  bool checkPassword(String password, [MessageTargetModel? model]) {
+    String decryptPassword = cryption(false, model != null ? model.password! : state.target!.password!);
     if (decryptPassword == password) {
       return true;
     } else {
       return false;
+    }
+  }
+
+  Future<String> imagePickAndUpload(BuildContext context) async {
+    final ImagePicker picker = ImagePicker();
+    Map<String, dynamic> times = Get_Times();
+
+    try {
+      final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+      if (file == null) {
+        return '';
+      }
+      if (!file.mimeType!.startsWith('image/')) {
+        ref.read(layoutControllerProvider.notifier).changeDialogState(true);
+        showDialog(
+          context: context,
+          builder: (context) => ModalWidget(
+            title: '파일 타입 오류',
+            content: '이미지 형식의 파일만 선택해주세요.',
+            width: 400,
+            action: () {
+              ref.read(layoutControllerProvider.notifier).changeDialogState(false);
+            },
+            select_button: true,
+          ),
+        );
+        return '';
+      }
+
+      final bytes = await file.readAsBytes();
+
+      final fileName = '${times['date']}_${times['time']}';
+      final fileRef = FirebaseStorage.instance.ref().child('message/$fileName');
+
+      final upload = await fileRef.putData(bytes, SettableMetadata(contentType: file.mimeType));
+
+      return upload.ref.getDownloadURL();
+    } catch (e) {
+      print('업로드 실패 : $e');
+      return '';
     }
   }
 }

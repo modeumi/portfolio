@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:portfolio/core/app_setting.dart';
+import 'package:portfolio/views/home/widgets/home_calendar_icon.dart';
 import 'package:portfolio/views/home/widgets/home_icon.dart';
 
 class HomeIconField extends StatelessWidget {
@@ -16,7 +17,10 @@ class HomeIconField extends StatelessWidget {
         children: [
           for (int i = 0; i < 4; i++)
             if (iconData.length > i)
-              Flexible(flex: 1, child: HomeIcon(iconData.keys.toList()[i], iconData[iconData.keys.toList()[i]], showContent))
+              if (iconData.keys.toList()[i] == 'calendar')
+                Flexible(flex: 1, child: HomeCalendarIcon(showContent: showContent))
+              else
+                Flexible(flex: 1, child: HomeIcon(iconData.keys.toList()[i], iconData[iconData.keys.toList()[i]], showContent))
             else
               Flexible(
                 flex: 1,

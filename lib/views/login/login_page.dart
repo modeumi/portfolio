@@ -21,17 +21,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    print('발동');
 
-    Future.microtask(() => ref.read(loginControllerProvider.notifier).initState(context));
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
     id.clear();
     password.clear();
+    Future.microtask(() => ref.read(loginControllerProvider.notifier).initState(context));
   }
 
   @override
