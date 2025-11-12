@@ -4,7 +4,7 @@ import 'package:utility/color.dart';
 import 'package:utility/format.dart';
 import 'package:utility/textstyle.dart';
 
-Widget calendarScheduleBuild(bool outside, DateTime focusedDay, DateTime day, Map<String, dynamic> schedules) {
+Widget calendarScheduleBuild(bool outside, DateTime focusedDay, DateTime day) {
   DateTime now = DateTime.now();
 
   String strFocusedDay = date_to_string_yyyyMMdd('-', focusedDay);
@@ -17,14 +17,6 @@ Widget calendarScheduleBuild(bool outside, DateTime focusedDay, DateTime day, Ma
   bool today = strToday == strDay;
   Map<String, dynamic> multiSchedule = {};
   Map<String, dynamic> singleSchedule = {};
-
-  for (var i in schedules.entries) {
-    if (i.value['type'].contains('single') && i.key == strDay) {
-      singleSchedule[i.key] = i.value;
-    } else if (i.key == strDay) {
-      multiSchedule[i.key] = i.value;
-    }
-  }
 
   return FractionallySizedBox(
     widthFactor: 1,

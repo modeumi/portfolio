@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:portfolio/models/calendar_model.dart';
-import 'package:utility/crypto.dart';
 import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
 
 class CalendarState {
   final DateTime targetDate;
   final CalendarModel schedule;
-  final Map<String, dynamic> schedules;
+  final List<Map<String, dynamic>> schedules;
+  final List<String> holiday;
 
   final List<int> paletteColorList = [
     0xFF7986CC,
@@ -26,13 +26,19 @@ class CalendarState {
     0xFFB093E7,
     0xFFA9A9A9,
   ];
-  CalendarState({DateTime? targetDate, CalendarModel? schedule, Map<String, dynamic>? schedules, int? paletteColor})
+  CalendarState({DateTime? targetDate, CalendarModel? schedule, List<Map<String, dynamic>>? schedules, List<String>? holiday})
     : targetDate = targetDate ?? DateTime.now(),
       schedule = schedule ?? CalendarModel(),
-      schedules = schedules ?? {};
+      schedules = schedules ?? [],
+      holiday = holiday ?? [];
 
-  CalendarState copyWith({DateTime? targetDate, CalendarModel? schedule, Map<String, dynamic>? schedules}) {
-    return CalendarState(targetDate: targetDate ?? this.targetDate, schedule: schedule ?? this.schedule, schedules: schedules ?? this.schedules);
+  CalendarState copyWith({DateTime? targetDate, CalendarModel? schedule, List<Map<String, dynamic>>? schedules, List<String>? holiday}) {
+    return CalendarState(
+      targetDate: targetDate ?? this.targetDate,
+      schedule: schedule ?? this.schedule,
+      schedules: schedules ?? this.schedules,
+      holiday: holiday ?? this.holiday,
+    );
   }
 }
 
@@ -41,8 +47,9 @@ class CalendarController extends StateNotifier<CalendarState> {
 
   final store = FirebaseFirestore.instance;
 
-  void changeCalendarDate(DateTime date) {
+  void changeCalendarDate(DateTime date) async {
     state = state.copyWith(targetDate: date);
+    await getHoliday();
   }
 
   void initAddSchedule() {
@@ -152,62 +159,72 @@ class CalendarController extends StateNotifier<CalendarState> {
     DocumentSnapshot schedules = await store.collection('Schedule').doc(docId).get();
     if (schedules.data() != null) {
       Map<String, dynamic> result = schedules.data() as Map<String, dynamic>;
-      Map<String, dynamic> scheduleData = {};
-      int itemKey = 1;
+      List<Map<String, dynamic>> schedule = [];
       for (var i in result.entries) {
         DateTime start = DateTime.fromMillisecondsSinceEpoch(i.value['startDate']);
         DateTime end = DateTime.fromMillisecondsSinceEpoch(i.value['endDate']);
-        String strStart = date_to_string_yyyyMMdd('-', start);
-        String strEnd = date_to_string_yyyyMMdd('-', end);
         CalendarModel model = CalendarModel.fromMap(i.value);
-        // 하루짜리 일정일 경우 single 태그로 저장
-        if (strStart == strEnd) {
-          scheduleData[strStart] = {'model': model, 'type': 'single_$itemKey'};
-        } else {
-          // 기간내 하루씩 추가하여 list에 저장
-          List<String> scheduleDays = [];
-          while (start.isBefore(end)) {
-            String strRangeStart = date_to_string_yyyyMMdd('-', start);
-            scheduleDays.add(strRangeStart);
-            start = start.add(Duration(days: 1));
-          }
-          for (var i in scheduleDays) {
-            if (scheduleDays.first == i) {
-              scheduleData[i] = {'model': model, 'type': 'start_$itemKey'};
-            } else if (scheduleDays.last == i) {
-              scheduleData[i] = {'model': model, 'type': 'end_$itemKey'};
-            } else {
-              scheduleData[i] = {'model': model, 'type': 'middle_$itemKey'};
-            }
-          }
+        List<String> scheduleRange = [];
+        while (start.isBefore(end)) {
+          String strRangeStart = date_to_string_yyyyMMdd('-', start);
+          scheduleRange.add(strRangeStart);
+          start = start.add(Duration(days: 1));
         }
-        itemKey++;
+        Map<String, dynamic> scheduleData = {'date': scheduleRange, 'model': model};
+        schedule.add(scheduleData);
       }
+      //A.sort((a, b) => (b['range'] as List).length.compareTo((a['range'] as List).length));
 
-      state = state.copyWith(schedules: scheduleData);
+      schedule.sort((a, b) => (b['date'] as List).length.compareTo((a['date'] as List).length));
+      print(schedule);
+
+      state = state.copyWith(schedules: schedule);
     }
   }
 
-  Future<List<String>> getHoliday() async {
+  Future<void> getHoliday() async {
     List<String> holiday = [];
     String serviceKey = dotenv.env['ServiceKey'] ?? '';
     if (serviceKey != '') {
-      final uri = Uri.https(
-        'https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService',
-      ).replace(queryParameters: {'serviceKey': serviceKey, 'solYear': state.targetDate.year, 'solMonth': state.targetDate.month, '_type': 'json'});
-      print(uri);
+      final uri = Uri(
+        scheme: 'http',
+        host: 'apis.data.go.kr',
+        path: '/B090041/openapi/service/SpcdeInfoService/getRestDeInfo',
+        queryParameters: {
+          'serviceKey': serviceKey,
+          'solYear': state.targetDate.year.toString(),
+          'solMonth': state.targetDate.month.toString(),
+          '_type': 'json',
+        },
+      );
       try {
         final response = await get(uri);
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
-          print(data);
+          final body = data['response']['body'];
+          final items = body['items'];
+          if (items == '') {
+            return;
+          } else {
+            final item = items['item'];
+            if (body['totalCount'] <= 1) {
+              DateTime date = DateTime.parse(item['locdate'].toString());
+              String strDate = date_to_string_yyyyMMdd('-', date);
+              holiday.add(strDate);
+            } else {
+              for (var i in item) {
+                DateTime date = DateTime.parse(i['locdate'].toString());
+                String strDate = date_to_string_yyyyMMdd('-', date);
+                holiday.add(strDate);
+              }
+            }
+          }
         }
+        state = state.copyWith(holiday: holiday);
       } catch (e) {
         print('요청실패 $e');
       }
     }
-
-    return holiday;
   }
 }
 
