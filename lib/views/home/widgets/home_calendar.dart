@@ -148,13 +148,13 @@ class _HomeCalendarState extends ConsumerState<HomeCalendar> with RiverpodMixin 
                     }
                   },
                   defaultBuilder: (context, day, focusedDay) {
-                    return CalendarBuildContainer(false, focusedDay, day);
+                    return calendarScheduleBuild(false, focusedDay, day, calendarState.schedules);
                   },
                   outsideBuilder: (context, day, focusedDay) {
-                    return CalendarBuildContainer(true, focusedDay, day);
+                    return calendarScheduleBuild(true, focusedDay, day, calendarState.schedules);
                   },
                   selectedBuilder: (context, day, focusedDay) {
-                    return CalendarBuildContainer(false, focusedDay, day);
+                    return calendarScheduleBuild(false, focusedDay, day, calendarState.schedules);
                   },
                 ),
               ),

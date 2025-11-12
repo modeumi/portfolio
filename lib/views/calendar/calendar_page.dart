@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/custom_text_field.dart';
-import 'package:portfolio/views/calendar/widgets/calendar_builder.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
-import 'package:utility/import_package.dart';
 import 'package:utility/textstyle.dart';
 
 class CalendarPage extends ConsumerStatefulWidget {
@@ -21,13 +18,92 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
   DateTime firstDate = DateTime(2020, 1, 0);
   DateTime lastDate = DateTime(2030, 12, 31);
   TextEditingController quick = TextEditingController();
+  Map<int, List<int>> calendarRows = {};
+  DateTime now = DateTime.now();
+  List<String> calendarHeader = ['일', '월', '화', '수', '목', '금', '토'];
+  List<String> holiday = [];
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       layoutController.changeColor(true);
+      layoutController.withLoading(() async {
+        await calendarController.loadSchedule();
+        await calendarController.getHoliday();
+      });
+      setCalendarRows();
     });
+  }
+
+  void setCalendarRows() {
+    DateTime beforeMonthLastDay = DateTime(calendarState.targetDate.year, calendarState.targetDate.month, 0);
+    DateTime monthFirstDay = DateTime(calendarState.targetDate.year, calendarState.targetDate.month, 1);
+    DateTime monthLastDay = DateTime(calendarState.targetDate.year, calendarState.targetDate.month + 1, 0);
+
+    int week = 1;
+
+    int firstWeekday = monthFirstDay.weekday % 7; // Dart는 월요일=1, 일요일=7이라 0으로 맞춤
+
+    if (week == 1) {
+      calendarRows[week] = [];
+      int calendarFirstDay = beforeMonthLastDay.day - firstWeekday + 1;
+      for (int i = calendarFirstDay; i <= beforeMonthLastDay.day; i++) {
+        calendarRows[week]!.add(i);
+      }
+    }
+    // int monthDay = 1;
+    for (int day = 1; day <= monthLastDay.day; day++) {
+      if (calendarRows[week] == null) {
+        calendarRows[week] = [];
+      }
+      calendarRows[week]!.add(day);
+      if (calendarRows[week]!.length == 7) {
+        week++;
+      }
+    }
+    if (calendarRows[calendarRows.keys.last]!.length != 7) {
+      int nextMonth = 1;
+      while (calendarRows[calendarRows.keys.last]!.length < 7) {
+        calendarRows[calendarRows.keys.last]!.add(nextMonth);
+        nextMonth++;
+      }
+    }
+    setState(() {});
+  }
+
+  Color daysFontColor(int index, int day) {
+    DateTime targetDate = calendarState.targetDate;
+    Color returnColor = color_black;
+    DateTime date = DateTime(targetDate.year, targetDate.month, day);
+
+    if (index == 1) {
+      int firstWeekLastDay = calendarRows[index]!.last;
+      DateTime previousMonth = DateTime(targetDate.year, targetDate.month - 1, day);
+
+      if (getWeekdayLetter(previousMonth) == '일') {
+        returnColor = Color(0xFFF3CBC9);
+      } else if (day > firstWeekLastDay) {
+        returnColor = color_grey;
+      }
+    } else if (index == calendarRows.keys.last) {
+      int lastWeekLastDay = DateTime(targetDate.year, targetDate.month + 1, 0).day;
+      int lastDayIndex = calendarRows[index]!.indexOf(lastWeekLastDay);
+      DateTime nextMonth = DateTime(targetDate.year, targetDate.month + 1, day);
+      if (getWeekdayLetter(nextMonth) == '토') {
+        returnColor = Color(0xFFDCEAF7);
+      } else if (calendarRows[index]!.indexOf(day) > lastDayIndex) {
+        returnColor = color_grey;
+      }
+    } else {
+      String dayLetter = getWeekdayLetter(date);
+      if (dayLetter == '일') {
+        returnColor = color_red;
+      } else if (dayLetter == '토') {
+        returnColor = color_blue;
+      }
+    }
+    return returnColor;
   }
 
   double getWeeksInMonth(DateTime month) {
@@ -133,56 +209,77 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
             ),
           ),
           Expanded(
-            child: TableCalendar(
-              focusedDay: calendarState.targetDate,
-              firstDay: firstDate,
-              lastDay: lastDate,
-              locale: 'ko-KR',
-              headerVisible: false,
-              daysOfWeekHeight: 30,
-              rowHeight: getWeeksInMonth(calendarState.targetDate),
-              calendarStyle: CalendarStyle(isTodayHighlighted: false),
-              pageAnimationEnabled: false,
-              availableGestures: AvailableGestures.none,
-              onDaySelected: (selectedDay, focusedDay) {
-                String strSelect = date_to_string_yyyyMMdd('-', selectedDay);
-                String strFocused = date_to_string_yyyyMMdd('-', calendarState.targetDate);
-                if (strSelect == strFocused) {
-                  context.push('/calendar_add_schedule');
-                  // homeController.changeCalendarDate(selectedDay);
-                } else {
-                  calendarController.changeCalendarDate(selectedDay);
-                }
-              },
-              calendarBuilders: CalendarBuilders(
-                dowBuilder: (context, day) {
-                  switch (day.weekday) {
-                    case DateTime.sunday:
-                      return Container(
-                        decoration: BoxDecoration(borderRadius: BorderRadius.horizontal(left: Radius.circular(5))),
-                        child: Center(child: Text('일', style: custom(17, FontWeight.w700, color_red))),
-                      );
-                    case DateTime.saturday:
-                      return Container(
-                        decoration: BoxDecoration(borderRadius: BorderRadius.horizontal(right: Radius.circular(5))),
-                        child: Center(child: Text('토', style: custom(17, FontWeight.w700, color_blue))),
-                      );
-                    default:
-                      return Center(child: Text(['월', '화', '수', '목', '금'][day.weekday - 1], style: black(17, FontWeight.w700)));
-                  }
-                },
-                defaultBuilder: (context, day, focusedDay) {
-                  return CalendarBuildContainer(false, focusedDay, day);
-                },
-                outsideBuilder: (context, day, focusedDay) {
-                  return CalendarBuildContainer(true, focusedDay, day);
-                },
-                selectedBuilder: (context, day, focusedDay) {
-                  return CalendarBuildContainer(false, focusedDay, day);
-                },
+            child: SizedBox(
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      for (var i in calendarHeader)
+                        Expanded(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 5),
+                            child: Center(
+                              child: Text(
+                                i,
+                                style: custom(
+                                  17,
+                                  FontWeight.w500,
+                                  calendarHeader.first == i
+                                      ? color_red
+                                      : calendarHeader.last == i
+                                      ? color_blue
+                                      : color_black,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  for (var i in calendarRows.entries)
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(top: BorderSide(width: 1, color: color_grey)),
+                        ),
+                        child: Row(
+                          children: [
+                            for (var element in i.value)
+                              Expanded(
+                                child: Container(
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(width: 1, color: calendarState.targetDate.day == element ? color_black : pWhite),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        width: 25,
+                                        height: 25,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(8),
+                                          color: now.day == element ? color_black : pWhite,
+                                        ),
+                                        child: Center(child: Text('$element', style: custom(17, FontWeight.w600, color_black))),
+                                      ),
+                                      Expanded(
+                                        child: Container(width: double.infinity, height: double.infinity),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
+
           Container(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Row(
