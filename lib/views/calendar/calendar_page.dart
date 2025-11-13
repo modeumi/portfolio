@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
+import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/custom_text_field.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
+import 'package:utility/import_package.dart';
+import 'package:utility/modal_widget.dart';
 import 'package:utility/textstyle.dart';
 
 class CalendarPage extends ConsumerStatefulWidget {
@@ -15,12 +19,14 @@ class CalendarPage extends ConsumerStatefulWidget {
 }
 
 class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin {
+  OverlayEntry? overlay;
   DateTime firstDate = DateTime(2020, 1, 0);
   DateTime lastDate = DateTime(2030, 12, 31);
   TextEditingController quick = TextEditingController();
   Map<int, List<String>> calendarRows = {};
   DateTime now = DateTime.now();
   List<String> calendarHeader = ['일', '월', '화', '수', '목', '금', '토'];
+
   @override
   void initState() {
     super.initState();
@@ -82,6 +88,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
         nextMonth++;
       }
     }
+
     setState(() {});
   }
 
@@ -142,8 +149,49 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
       }
       returnData.add(cellData);
     }
-
     return returnData;
+  }
+
+  List<Map<String, dynamic>> dayScheduleFilter(String day) {
+    List<Map<String, dynamic>> result = [];
+    result = calendarState.schedules.where((schedule) {
+      return (schedule['date'] as List<String>).any((date) => date.contains(day));
+    }).toList();
+
+    for (var i in result) {
+      print(i);
+    }
+
+    return result;
+  }
+
+  void showOverlay(BuildContext context, String date) {
+    removeOverlay();
+    Map<String, dynamic> scheduleData = {};
+
+    overlay = OverlayEntry(
+      builder: (context) {
+        return Container(
+          width: app_width,
+          height: app_height,
+          child: Stack(
+            children: [
+              Opacity(
+                opacity: 0.3,
+                child: Container(width: app_width, height: app_height, color: color_grey),
+              ),
+              Center(child: Container(height: app_height * 0.6)),
+            ],
+          ),
+        );
+      },
+    );
+    Overlay.of(context).insert(overlay!);
+  }
+
+  void removeOverlay() {
+    overlay?.remove();
+    overlay = null;
   }
 
   @override
@@ -265,6 +313,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
                                 for (var i in data)
                                   Positioned(
                                     left: cellWidth * i['rowIndex'],
+                                    top: (21 * (i['cellIndex'] - 1)).toDouble(),
                                     child: Container(
                                       margin: EdgeInsets.only(top: 30),
                                       child: Column(
@@ -281,7 +330,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
                                                 )
                                               : Container(
                                                   width: cellWidth * i['length'],
-                                                  padding: EdgeInsets.symmetric(vertical: 2),
+                                                  height: 20,
                                                   decoration: BoxDecoration(
                                                     borderRadius: BorderRadius.circular(5),
                                                     color: Color(i['model'].colorCode),
@@ -298,7 +347,17 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
                                       Expanded(
                                         child: GestureDetector(
                                           onTap: () {
-                                            calendarController.changeCalendarDate(DateTime.parse(element));
+                                            if (date_to_string_yyyyMMdd('-', calendarState.targetDate) == element) {
+                                              List<Map<String, dynamic>> schedule = dayScheduleFilter(element);
+                                              if (schedule.isEmpty) {
+                                                calendarController.initAddSchedule();
+                                                context.push('/calendar_add_schedule');
+                                              } else {
+                                                calendarController.setDailySchedule(element);
+                                              }
+                                            } else {
+                                              calendarController.changeCalendarDate(DateTime.parse(element));
+                                            }
                                           },
                                           child: Container(
                                             width: double.infinity,
@@ -374,7 +433,22 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
                     builder: (context, constraints) {
                       double width = constraints.maxWidth;
                       return GestureDetector(
-                        onTap: () {},
+                        onTap: () async {
+                          calendarController.initAddSchedule();
+                          if (quick.text.trim().replaceAll(' ', '') != '') {
+                            Map<String, dynamic> data = {'title': quick.text, 'note': ''};
+                            bool result = await calendarController.addSchedule(data);
+                            if (result) {
+                              quick.clear();
+                            } else {
+                              showDialog(
+                                context: context,
+                                builder: (context) =>
+                                    ModalWidget(title: '오류', action: () {}, content: '일정 등록에 실패하였습니다.\n잠시 후 다시 시도해주세요.', select_button: true),
+                              );
+                            }
+                          }
+                        },
                         child: Container(
                           width: width,
                           height: width,

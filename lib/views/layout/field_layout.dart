@@ -42,7 +42,7 @@ class _FieldLayoutState extends ConsumerState<FieldLayout> {
                         text: TextSpan(
                           style: black(22, FontWeight.w600),
                           children: [
-                            TextSpan(text: 'Modeumi', style: custom(25, FontWeight.w800, primary)),
+                            TextSpan(text: '강호중', style: custom(25, FontWeight.w800, secondary)),
                             TextSpan(text: '\'s'),
                             TextSpan(text: ' Portfolio'),
                           ],

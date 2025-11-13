@@ -140,13 +140,28 @@ class CalendarController extends StateNotifier<CalendarState> {
 
   Future<bool> addSchedule(Map<String, dynamic> data) async {
     Map<String, dynamic> scheduleData = state.schedule.toMap();
-    String docId = date_to_string_yyMM('-', state.schedule.startDate);
-
     scheduleData.addAll(data);
+
+    DateTime startDate = DateTime.fromMillisecondsSinceEpoch(scheduleData['startDate']);
+    DateTime endDate = DateTime.fromMillisecondsSinceEpoch(scheduleData['endDate']);
+
+    List<String> dateKey = [];
+    while (startDate.isBefore(endDate) || startDate.isAtSameMomentAs(endDate)) {
+      String strStart = date_to_string_yyyyMMdd('-', startDate);
+      dateKey.add(strStart);
+      startDate = startDate.add(Duration(days: 1));
+    }
+
     DateTime now = DateTime.now();
-    Map<String, dynamic> uploadData = {'${date_to_string_yyyyMMdd('-', now)} ${time_to_string('hmss', now)}': scheduleData};
+    scheduleData.remove('startDate');
+    scheduleData.remove('endDate');
+    int scheduleId = now.millisecondsSinceEpoch;
+    scheduleData['scheduleId'] = scheduleId;
+    Map<String, dynamic> uploadData = {'$scheduleId': scheduleData};
     try {
-      await store.collection('Schedule').doc(docId).set(uploadData, SetOptions(merge: true));
+      for (var i in dateKey) {
+        await store.collection('Schedule').doc(i).set(uploadData, SetOptions(merge: true));
+      }
       await loadSchedule();
       return true;
     } catch (e) {
@@ -155,31 +170,54 @@ class CalendarController extends StateNotifier<CalendarState> {
   }
 
   Future<void> loadSchedule() async {
-    String docId = date_to_string_yyMM('-', state.targetDate);
-    DocumentSnapshot schedules = await store.collection('Schedule').doc(docId).get();
-    if (schedules.data() != null) {
-      Map<String, dynamic> result = schedules.data() as Map<String, dynamic>;
-      List<Map<String, dynamic>> schedule = [];
-      for (var i in result.entries) {
-        DateTime start = DateTime.fromMillisecondsSinceEpoch(i.value['startDate']);
-        DateTime end = DateTime.fromMillisecondsSinceEpoch(i.value['endDate']);
-        CalendarModel model = CalendarModel.fromMap(i.value);
-        List<String> scheduleRange = [];
-        while (start.isBefore(end)) {
-          String strRangeStart = date_to_string_yyyyMMdd('-', start);
-          scheduleRange.add(strRangeStart);
-          start = start.add(Duration(days: 1));
+    DateTime targetDate = state.targetDate;
+    DateTime rangeStart = DateTime(targetDate.year, targetDate.month, 1);
+    DateTime rangeend = DateTime(targetDate.year, targetDate.month + 1, 0);
+    String strRangeStart = date_to_string_yyyyMMdd('-', rangeStart);
+    String strRangeEnd = date_to_string_yyyyMMdd('-', rangeend);
+
+    final schedules = await store
+        .collection('Schedule')
+        .orderBy(FieldPath.documentId)
+        .where(FieldPath.documentId, isGreaterThanOrEqualTo: strRangeStart)
+        .where(FieldPath.documentId, isLessThanOrEqualTo: strRangeEnd)
+        .get();
+
+    Map<String, dynamic> dataProcess = {};
+    for (var i in schedules.docs) {
+      for (var element in i.data().entries) {
+        String id = element.value['scheduleId'].toString();
+        if (!dataProcess.containsKey(id)) {
+          dataProcess[id] = {};
+          dataProcess[id]['range'] = [];
+          dataProcess[id]['model'] = element.value;
         }
-        Map<String, dynamic> scheduleData = {'date': scheduleRange, 'model': model};
-        schedule.add(scheduleData);
+        dataProcess[id]['range']!.add(i.id);
       }
-      //A.sort((a, b) => (b['range'] as List).length.compareTo((a['range'] as List).length));
-
-      schedule.sort((a, b) => (b['date'] as List).length.compareTo((a['date'] as List).length));
-      print(schedule);
-
-      state = state.copyWith(schedules: schedule);
     }
+    print(dataProcess);
+
+    // if (schedules.data() != null) {
+    //   Map<String, dynamic> result = schedules.data() as Map<String, dynamic>;
+    //   List<Map<String, dynamic>> schedule = [];
+    //   for (var i in result.entries) {
+    //     DateTime start = DateTime.fromMillisecondsSinceEpoch(i.value['startDate']);
+    //     DateTime end = DateTime.fromMillisecondsSinceEpoch(i.value['endDate']);
+    //     CalendarModel model = CalendarModel.fromMap(i.value);
+    //     List<String> scheduleRange = [];
+    //     while (start.isBefore(end)) {
+    //       String strRangeStart = date_to_string_yyyyMMdd('-', start);
+    //       scheduleRange.add(strRangeStart);
+    //       start = start.add(Duration(days: 1));
+    //     }
+    //     Map<String, dynamic> scheduleData = {'date': scheduleRange, 'model': model};
+    //     schedule.add(scheduleData);
+    //   }
+
+    //   schedule.sort((a, b) => (b['date'] as List).length.compareTo((a['date'] as List).length));
+
+    //   state = state.copyWith(schedules: schedule);
+    // }
   }
 
   Future<void> getHoliday() async {
@@ -225,6 +263,27 @@ class CalendarController extends StateNotifier<CalendarState> {
         print('요청실패 $e');
       }
     }
+  }
+
+  Future<void> setDailySchedule(String day) async {
+    List<String> fiveLengthSchedule = [];
+    DateTime firstDate = DateTime.parse(day).add(Duration(days: -2));
+    while (fiveLengthSchedule.length < 5) {
+      String strDate = date_to_string_yyyyMMdd('-', firstDate);
+      fiveLengthSchedule.add(strDate);
+      firstDate = firstDate.add(Duration(days: 1));
+    }
+    print(fiveLengthSchedule);
+    loadDailySchedule(fiveLengthSchedule.last);
+    for (var i in fiveLengthSchedule) {}
+  }
+
+  Future<void> loadDailySchedule(String day) async {
+    DateTime target = DateTime.parse(day);
+    var targetMillis = target.millisecondsSinceEpoch;
+    final snapshot = await FirebaseFirestore.instance.collection('Schedule').doc(date_to_string_yyMM('-', target)).get();
+    print(day);
+    print(snapshot.data());
   }
 }
 

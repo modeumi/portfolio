@@ -53,12 +53,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 color: pWhite,
-                border: Border.all(width: 2, color: primary),
+                border: Border.all(width: 2, color: secondary),
               ),
               child: Column(
                 spacing: 20,
                 children: [
-                  Text('Login', style: custom(35, FontWeight.w700, primary)),
+                  Text('Login', style: custom(35, FontWeight.w700, secondary)),
                   Expanded(
                     child: Column(
                       spacing: 50,

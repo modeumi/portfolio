@@ -469,7 +469,10 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
                         onTap: () async {
                           if (title.text.trim().replaceAll(' ', '') != '') {
                             Map<String, dynamic> data = {'title': title.text, 'note': note.text};
-                            bool result = await calendarController.addSchedule(data);
+                            bool result = false;
+                            await layoutController.withLoading(() async {
+                              result = await calendarController.addSchedule(data);
+                            });
                             if (result) {
                               context.pop();
                             } else {
