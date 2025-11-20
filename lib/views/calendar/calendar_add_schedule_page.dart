@@ -21,8 +21,8 @@ class CalendarAddSchedulePage extends ConsumerStatefulWidget {
 }
 
 class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePage> with RiverpodMixin {
-  TextEditingController title = TextEditingController();
-  TextEditingController note = TextEditingController();
+  late TextEditingController title;
+  late TextEditingController note;
   FixedExtentScrollController ampmController = FixedExtentScrollController();
   FixedExtentScrollController hourController = FixedExtentScrollController();
   FixedExtentScrollController minuteController = FixedExtentScrollController();
@@ -40,12 +40,12 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
   String selectTimeType = '';
 
   String selectedAmPm = '';
-  int hourType = 0;
-  int minuteType = 0;
+  String hourType = '';
+  String minuteType = '';
 
   List<String> ampm = ['오전', '오후'];
-  List<int> hour = List.generate(12, (index) => (index + 1));
-  List<int> minute = List.generate(60, (index) => index);
+  List<String> hour = List.generate(12, (index) => (index + 1).toString());
+  List<String> minute = List.generate(60, (index) => index.toString().padLeft(2, '0'));
 
   @override
   void initState() {
@@ -56,24 +56,29 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
     minuteController = FixedExtentScrollController(initialItem: 0);
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    title = TextEditingController(text: calendarState.schedule.title ?? '');
+    note = TextEditingController(text: calendarState.schedule.note ?? '');
+  }
+
   void setTime(String type) {
-    String strtime = '';
+    String strtime = type == 'start' ? calendarState.schedule.startTime! : calendarState.schedule.endTime!;
     selectTimeType = type;
-    if (type == 'start') {
-      strtime = time_to_string('hms', calendarState.schedule.startDate!);
-    } else if (type == 'end') {
-      strtime = time_to_string('hms', calendarState.schedule.endDate!);
-    }
+
     String reformTime = reforme_time_short('mkor', strtime);
     setState(() {
       selectedAmPm = reformTime.split(' ').first;
-      hourType = int.tryParse(reformTime.split(' ')[1].replaceAll('시', '').padLeft(2, '0')) ?? 0;
-      minuteType = int.tryParse(reformTime.split(' ').last.replaceAll('분', '')) ?? 0;
+      hourType = reformTime.split(' ')[1].replaceAll('시', '');
+      minuteType = reformTime.split(' ').last.replaceAll('분', '').padLeft(2, '0');
     });
-
-    ampmController.jumpToItem(ampm.indexOf(selectedAmPm));
-    hourController.jumpToItem(hour.indexOf(hourType));
-    minuteController.jumpToItem(minute.indexOf(minuteType));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ampmController.jumpToItem(ampm.indexOf(selectedAmPm));
+      hourController.jumpToItem(hour.indexOf(hourType));
+      minuteController.jumpToItem(minute.indexOf(minuteType));
+    });
   }
 
   @override
@@ -81,7 +86,7 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
     return Container(
       width: app_width,
       height: app_height,
-      decoration: BoxDecoration(color: back_grey_2),
+      decoration: BoxDecoration(color: backSurface),
       child: Stack(
         children: [
           Positioned.fill(
@@ -201,7 +206,7 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
                                               selectType = true;
                                             },
                                             icon: Text(
-                                              '${date_to_string_MMdd('kor', calendarState.schedule.startDate!)} (${getWeekdayLetter(calendarState.schedule.startDate!)})',
+                                              '${date_to_string_MMdd('kor', calendarState.schedule.startDate!)} (${getWeekdayLetter(DateTime.parse(calendarState.schedule.startDate!))})',
                                               style: black(22, FontWeight.w500),
                                             ),
                                           ),
@@ -224,7 +229,7 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
                                                 setTime('start');
                                               },
                                               icon: Text(
-                                                reforme_time_short('m:', time_to_string('hms', calendarState.schedule.startDate!)),
+                                                reforme_time_short('m:', calendarState.schedule.startTime!),
                                                 style: black(22, FontWeight.w500),
                                               ),
                                             ),
@@ -254,7 +259,7 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
                                               selectType = false;
                                             },
                                             icon: Text(
-                                              '${date_to_string_MMdd('kor', calendarState.schedule.endDate!)} (${getWeekdayLetter(calendarState.schedule.startDate!)})',
+                                              '${date_to_string_MMdd('kor', calendarState.schedule.endDate!)} (${getWeekdayLetter(DateTime.parse(calendarState.schedule.endDate!))})',
                                               style: black(22, FontWeight.w500),
                                             ),
                                           ),
@@ -278,7 +283,7 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
                                                 setTime('end');
                                               },
                                               icon: Text(
-                                                reforme_time_short('m:', time_to_string('hms', calendarState.schedule.endDate!)),
+                                                reforme_time_short('m:', calendarState.schedule.endTime!),
                                                 style: black(22, FontWeight.w500),
                                               ),
                                             ),
@@ -399,7 +404,13 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
                                       itemExtent: 60,
                                       onSelectedItemChanged: (index) {
                                         setState(() => hourType = hour[index]);
-                                        calendarController.scheduleTimeUpdate(selectTimeType, 'hour', hourType);
+                                        String reformHour = '';
+                                        if (selectedAmPm == '오전' && hourType == '12') {
+                                          reformHour = '00';
+                                        } else {
+                                          reformHour = hourType;
+                                        }
+                                        calendarController.scheduleTimeUpdate(selectTimeType, 'hour', reformHour);
                                       },
                                       selectionOverlay: Container(),
                                       looping: true,
@@ -470,10 +481,18 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
                           if (title.text.trim().replaceAll(' ', '') != '') {
                             Map<String, dynamic> data = {'title': title.text, 'note': note.text};
                             bool result = false;
+                            if (calendarState.edit) {
+                              await layoutController.withLoading(() async {
+                                await calendarController.deleteSchedule();
+                              });
+                            }
                             await layoutController.withLoading(() async {
                               result = await calendarController.addSchedule(data);
                             });
                             if (result) {
+                              if (calendarState.edit) {
+                                context.pop();
+                              }
                               context.pop();
                             } else {
                               showDialog(

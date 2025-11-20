@@ -29,6 +29,8 @@ class LayoutState {
   final double valueDy;
   final double statusOpacity;
 
+  final OverlayEntry? overlay;
+
   const LayoutState({
     this.bootLoading = false,
     this.actionLoading = false,
@@ -44,6 +46,8 @@ class LayoutState {
     this.endDy = 0.0,
     this.valueDy = 0.0,
     this.statusOpacity = 0.0,
+
+    this.overlay,
   });
 
   LayoutState copyWith({
@@ -61,6 +65,8 @@ class LayoutState {
     double? endDy,
     double? valueDy,
     double? statusOpacity,
+
+    OverlayEntry? overlay,
   }) {
     return LayoutState(
       bootLoading: bootLoading ?? this.bootLoading,
@@ -75,6 +81,7 @@ class LayoutState {
       endDy: endDy ?? this.endDy,
       valueDy: valueDy ?? this.valueDy,
       statusOpacity: statusOpacity ?? this.statusOpacity,
+      overlay: overlay ?? this.overlay,
     );
   }
 }

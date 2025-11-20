@@ -1,17 +1,27 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:go_router/go_router.dart';
 
-import 'package:portfolio/models/calendar_model.dart';
+import 'package:portfolio/models/schedules_model.dart';
 import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
 
 class CalendarState {
-  final DateTime targetDate;
-  final CalendarModel schedule;
-  final List<Map<String, dynamic>> schedules;
-  final List<String> holiday;
+  final ScheduleModel schedule;
 
+  final DateTime targetDate;
+  final DateTime lunarDate;
+
+  final bool edit;
+
+  final Map<String, dynamic> schedules;
+
+  final Map<String, dynamic> searchSchedule;
+
+  final List<ScheduleModel> dailySchedules;
+  final List<String> holiday;
   final List<int> paletteColorList = [
     0xFF7986CC,
     0xFFD44245,
@@ -26,18 +36,42 @@ class CalendarState {
     0xFFB093E7,
     0xFFA9A9A9,
   ];
-  CalendarState({DateTime? targetDate, CalendarModel? schedule, List<Map<String, dynamic>>? schedules, List<String>? holiday})
-    : targetDate = targetDate ?? DateTime.now(),
-      schedule = schedule ?? CalendarModel(),
-      schedules = schedules ?? [],
-      holiday = holiday ?? [];
+  CalendarState({
+    this.edit = false,
+    DateTime? targetDate,
+    DateTime? lunarDate,
+    ScheduleModel? schedule,
+    Map<String, dynamic>? schedules,
+    Map<String, dynamic>? searchSchedule,
+    List<String>? holiday,
+    List<ScheduleModel>? dailySchedules,
+  }) : targetDate = targetDate ?? DateTime.now(),
+       lunarDate = lunarDate ?? DateTime.now(),
+       schedule = schedule ?? ScheduleModel(),
+       schedules = schedules ?? {},
+       searchSchedule = searchSchedule ?? {},
+       holiday = holiday ?? [],
+       dailySchedules = dailySchedules ?? [];
 
-  CalendarState copyWith({DateTime? targetDate, CalendarModel? schedule, List<Map<String, dynamic>>? schedules, List<String>? holiday}) {
+  CalendarState copyWith({
+    DateTime? targetDate,
+    DateTime? lunarDate,
+    ScheduleModel? schedule,
+    Map<String, dynamic>? schedules,
+    Map<String, dynamic>? searchSchedule,
+    List<String>? holiday,
+    bool? edit,
+    List<ScheduleModel>? dailySchedules,
+  }) {
     return CalendarState(
       targetDate: targetDate ?? this.targetDate,
+      lunarDate: lunarDate ?? this.lunarDate,
       schedule: schedule ?? this.schedule,
+      edit: edit ?? this.edit,
       schedules: schedules ?? this.schedules,
+      searchSchedule: searchSchedule ?? this.searchSchedule,
       holiday: holiday ?? this.holiday,
+      dailySchedules: dailySchedules ?? this.dailySchedules,
     );
   }
 }
@@ -47,43 +81,57 @@ class CalendarController extends StateNotifier<CalendarState> {
 
   final store = FirebaseFirestore.instance;
 
-  void changeCalendarDate(DateTime date) async {
+  Future<void> changeCalendarDate(DateTime date) async {
+    DateTime beforeDate = state.targetDate;
     state = state.copyWith(targetDate: date);
-    await getHoliday();
+    await getSolarDate();
+    if (state.targetDate.month != beforeDate.month) {
+      await getHoliday();
+    }
+  }
+
+  void changeEdit(bool type) {
+    state = state.copyWith(edit: type);
   }
 
   void initAddSchedule() {
-    CalendarModel schedule = CalendarModel();
+    ScheduleModel schedule = ScheduleModel();
     DateTime day = state.targetDate;
     DateTime startDate = DateTime(day.year, day.month, day.day, 8, 0, 0);
     DateTime endDate = DateTime(day.year, day.month, day.day, 9, 0, 0);
     int colorCode = 0xFF7986CC;
-    schedule = schedule.copyWith(startDate: startDate, endDate: endDate, allDay: false, colorCode: colorCode);
+    schedule = schedule.copyWith(
+      startDate: date_to_string_yyyyMMdd('-', startDate),
+      endDate: date_to_string_yyyyMMdd('-', endDate),
+      startTime: time_to_string('hms', startDate),
+      endTime: time_to_string('hms', endDate),
+      allDay: false,
+      colorCode: colorCode,
+    );
     state = state.copyWith(schedule: schedule);
   }
 
   void scheduleModelUpdate(String type, dynamic value) {
-    CalendarModel model = state.schedule;
+    ScheduleModel model = state.schedule;
     if (type == 'allDay') {
       if (value == true) {
-        model = model.copyWith(startDate: DateTime(model.startDate!.year, model.startDate!.month, model.startDate!.day, 0, 0, 0));
-        model = model.copyWith(endDate: DateTime(model.endDate!.year, model.endDate!.month, model.endDate!.day, 23, 59, 0));
+        model = model.copyWith(startTime: '00:00:00', endTime: '00:00:00', allDay: true);
       } else {
-        model = model.copyWith(startDate: DateTime(model.startDate!.year, model.startDate!.month, model.startDate!.day, 8, 0, 0));
-        model = model.copyWith(endDate: DateTime(model.endDate!.year, model.endDate!.month, model.endDate!.day, 9, 0, 0));
+        model = model.copyWith(startTime: '08:00:00', endTime: '09:00:00', allDay: false);
       }
-      model = model.copyWith(allDay: value);
     } else if (type == 'color') {
       model = model.copyWith(colorCode: value);
     } else if (type == 'start') {
-      model = model.copyWith(startDate: value);
-      if (value.isAfter(state.schedule.endDate!)) {
-        model = model.copyWith(endDate: value);
+      String strDate = date_to_string_yyyyMMdd('-', value);
+      model = model.copyWith(startDate: strDate);
+      if (value.isAfter(DateTime.parse(state.schedule.endDate!))) {
+        model = model.copyWith(endDate: strDate);
       }
     } else if (type == 'end') {
-      model = model.copyWith(endDate: value);
-      if (value.isBefore(state.schedule.startDate!)) {
-        model = model.copyWith(startDate: value);
+      String strDate = date_to_string_yyyyMMdd('-', value);
+      model = model.copyWith(endDate: strDate);
+      if (value.isBefore(DateTime.parse(state.schedule.startDate!))) {
+        model = model.copyWith(startDate: strDate);
       }
     }
     state = state.copyWith(schedule: model);
@@ -91,59 +139,76 @@ class CalendarController extends StateNotifier<CalendarState> {
 
   // type => true = start, false = end
   bool scheduleDateUpdate(DateTime date, bool type) {
-    CalendarModel model = state.schedule;
+    ScheduleModel model = state.schedule;
     bool result = false;
-    if ((date.isAfter(state.schedule.endDate!) && type) || (date.isBefore(state.schedule.startDate!) && !type)) {
+    DateTime startDate = DateTime.parse(state.schedule.startDate!);
+    DateTime endDate = DateTime.parse(state.schedule.endDate!);
+
+    if ((date.isAfter(endDate) && type) || (date.isBefore(startDate) && !type)) {
       model = model.copyWith(
-        startDate: DateTime(date.year, date.month, date.day, model.startDate!.hour, model.startDate!.minute, 0),
-        endDate: DateTime(date.year, date.month, date.day, model.endDate!.hour, model.endDate!.minute, 0),
+        startDate: date_to_string_yyyyMMdd('-', date),
+        endDate: date_to_string_yyyyMMdd('-', date),
+        startTime: model.startTime,
+        endTime: model.endTime,
+        // startDate: DateTime(date.year, date.month, date.day, model.startDate!.hour, model.startDate!.minute, 0),
+        // endDate: DateTime(date.year, date.month, date.day, model.endDate!.hour, model.endDate!.minute, 0),
       );
       result = false;
     } else if (type) {
-      model = model.copyWith(
-        startDate: DateTime(date.year, date.month, date.day, model.startDate!.hour, model.startDate!.minute, 0),
-        endDate: DateTime(date.year, date.month, date.day, model.endDate!.hour, model.endDate!.minute, 0),
-      );
+      model = model.copyWith(startDate: date_to_string_yyyyMMdd('-', date), startTime: model.startTime);
       result = false;
     } else {
-      model = model.copyWith(endDate: DateTime(date.year, date.month, date.day, model.endDate!.hour, model.endDate!.minute, 0));
+      model = model.copyWith(endDate: date_to_string_yyyyMMdd('-', date), endTime: model.endTime);
       result = true;
     }
     state = state.copyWith(schedule: model);
     return result;
   }
 
-  void scheduleTimeUpdate(String type, String field, dynamic value) {
-    DateTime modelDate = type == 'start' ? state.schedule.startDate! : state.schedule.endDate!;
-    DateTime newTime = modelDate;
-    String beforeTime = reforme_time_short('mkor', time_to_string('hms', modelDate));
-    if (field == 'ampm') {
-      if (value == beforeTime.split(' ').first) {
-        return;
-      } else {
-        newTime = DateTime(modelDate.year, modelDate.month, modelDate.day, modelDate.hour + (value == '오후' ? 12 : -12), modelDate.minute, 0);
-      }
+  void scheduleTimeUpdate(String type, String field, String value) {
+    String modelTime = type == 'start' ? state.schedule.startTime! : state.schedule.endTime!;
+    List<String> times = modelTime.split(':');
+    bool isPm = int.parse(times.first) >= 12;
+    value = value.padLeft(2, '0');
+    // DateTime newTime = modelDate;
+    // String beforeTime = reforme_time_short('mkor', time_to_string('hms', modelDate));
+    if (value == '오후' && int.parse(times.first) < 12) {
+      int modelHour = int.parse(times.first);
+      modelTime = '${modelHour + 12}:${times[1]}:00';
+    } else if (value == '오전' && int.parse(times.first) >= 12) {
+      int modelHour = int.parse(times.first) - 12;
+      modelTime = '${modelHour.toString().padLeft(2, '0')}:${times[1]}:00';
     } else if (field == 'hour') {
-      bool isAm = beforeTime.split(' ').first == '오전';
-      int hour;
-      if (value == 12) {
-        hour = isAm ? 0 : 12;
-      } else {
-        hour = value + (isAm ? 0 : 12);
-      }
-      newTime = DateTime(modelDate.year, modelDate.month, modelDate.day, hour, modelDate.minute, 0);
+      modelTime = '${(int.parse(value) + (isPm ? 12 : 0)).toString().padLeft(2, '0')}:${times[1]}:00';
     } else if (field == 'minute') {
-      newTime = DateTime(modelDate.year, modelDate.month, modelDate.day, modelDate.hour, value, 0);
+      modelTime = '${times[0]}:$value:00';
     }
-    scheduleModelUpdate(type, newTime);
+
+    ScheduleModel model = state.schedule;
+    if (type == 'start') {
+      DateTime start = DateTime.parse('${model.startDate} $modelTime');
+      DateTime end = DateTime.parse('${model.endDate} ${model.endTime}');
+      if (start.isAfter(end)) {
+        model = model.copyWith(endTime: modelTime);
+      }
+      model = model.copyWith(startTime: modelTime);
+    } else {
+      DateTime start = DateTime.parse('${model.startDate} ${model.startTime}');
+      DateTime end = DateTime.parse('${model.endDate} $modelTime');
+      if (end.isBefore(start)) {
+        model = model.copyWith(startTime: modelTime);
+      }
+      model = model.copyWith(endTime: modelTime);
+    }
+    state = state.copyWith(schedule: model);
   }
 
   Future<bool> addSchedule(Map<String, dynamic> data) async {
     Map<String, dynamic> scheduleData = state.schedule.toMap();
     scheduleData.addAll(data);
 
-    DateTime startDate = DateTime.fromMillisecondsSinceEpoch(scheduleData['startDate']);
-    DateTime endDate = DateTime.fromMillisecondsSinceEpoch(scheduleData['endDate']);
+    DateTime startDate = DateTime.parse(scheduleData['startDate']);
+    DateTime endDate = DateTime.parse(scheduleData['endDate']);
 
     List<String> dateKey = [];
     while (startDate.isBefore(endDate) || startDate.isAtSameMomentAs(endDate)) {
@@ -153,9 +218,8 @@ class CalendarController extends StateNotifier<CalendarState> {
     }
 
     DateTime now = DateTime.now();
-    scheduleData.remove('startDate');
-    scheduleData.remove('endDate');
     int scheduleId = now.millisecondsSinceEpoch;
+    scheduleData['date'] = dateKey;
     scheduleData['scheduleId'] = scheduleId;
     Map<String, dynamic> uploadData = {'$scheduleId': scheduleData};
     try {
@@ -163,6 +227,7 @@ class CalendarController extends StateNotifier<CalendarState> {
         await store.collection('Schedule').doc(i).set(uploadData, SetOptions(merge: true));
       }
       await loadSchedule();
+      await loadDailySchedule();
       return true;
     } catch (e) {
       return false;
@@ -184,40 +249,24 @@ class CalendarController extends StateNotifier<CalendarState> {
         .get();
 
     Map<String, dynamic> dataProcess = {};
+    Map<String, dynamic> result = {};
     for (var i in schedules.docs) {
       for (var element in i.data().entries) {
         String id = element.value['scheduleId'].toString();
-        if (!dataProcess.containsKey(id)) {
-          dataProcess[id] = {};
-          dataProcess[id]['range'] = [];
-          dataProcess[id]['model'] = element.value;
-        }
-        dataProcess[id]['range']!.add(i.id);
+        dataProcess[id] = element.value;
+        dataProcess[id]['id'] = element.key;
       }
     }
-    print(dataProcess);
 
-    // if (schedules.data() != null) {
-    //   Map<String, dynamic> result = schedules.data() as Map<String, dynamic>;
-    //   List<Map<String, dynamic>> schedule = [];
-    //   for (var i in result.entries) {
-    //     DateTime start = DateTime.fromMillisecondsSinceEpoch(i.value['startDate']);
-    //     DateTime end = DateTime.fromMillisecondsSinceEpoch(i.value['endDate']);
-    //     CalendarModel model = CalendarModel.fromMap(i.value);
-    //     List<String> scheduleRange = [];
-    //     while (start.isBefore(end)) {
-    //       String strRangeStart = date_to_string_yyyyMMdd('-', start);
-    //       scheduleRange.add(strRangeStart);
-    //       start = start.add(Duration(days: 1));
-    //     }
-    //     Map<String, dynamic> scheduleData = {'date': scheduleRange, 'model': model};
-    //     schedule.add(scheduleData);
-    //   }
+    for (var i in dataProcess.entries) {
+      Map<String, dynamic> model = dataProcess[i.key];
+      model['date'] = List<String>.from(i.value['date']);
+      dataProcess[i.key] = ScheduleModel.fromMap(model);
+      result[i.key] = dataProcess[i.key];
+    }
 
-    //   schedule.sort((a, b) => (b['date'] as List).length.compareTo((a['date'] as List).length));
-
-    //   state = state.copyWith(schedules: schedule);
-    // }
+    // result print : {1763339250119: ScheduleModel(date: [2025-11-01, 2025-11-02, 2025-11-03], startTime: 00:00, endTime: 18:30, allDay: false, title: ex1, note: asdasd, colorCode: 4286154444)}
+    state = state.copyWith(schedules: result);
   }
 
   Future<void> getHoliday() async {
@@ -231,7 +280,7 @@ class CalendarController extends StateNotifier<CalendarState> {
         queryParameters: {
           'serviceKey': serviceKey,
           'solYear': state.targetDate.year.toString(),
-          'solMonth': state.targetDate.month.toString(),
+          'solMonth': state.targetDate.month.toString().padLeft(2, '0'),
           '_type': 'json',
         },
       );
@@ -265,25 +314,124 @@ class CalendarController extends StateNotifier<CalendarState> {
     }
   }
 
-  Future<void> setDailySchedule(String day) async {
-    List<String> fiveLengthSchedule = [];
-    DateTime firstDate = DateTime.parse(day).add(Duration(days: -2));
-    while (fiveLengthSchedule.length < 5) {
-      String strDate = date_to_string_yyyyMMdd('-', firstDate);
-      fiveLengthSchedule.add(strDate);
-      firstDate = firstDate.add(Duration(days: 1));
+  Future<void> getSolarDate() async {
+    String serviceKey = dotenv.env['ServiceKey'] ?? '';
+    if (serviceKey != '') {
+      final uri = Uri(
+        scheme: 'http',
+        host: 'apis.data.go.kr',
+        path: '/B090041/openapi/service/LrsrCldInfoService/getLunCalInfo',
+        queryParameters: {
+          'solYear': state.targetDate.year.toString(),
+          'solMonth': state.targetDate.month.toString().padLeft(2, '0'),
+          'solDay': state.targetDate.day.toString().padLeft(2, '0'),
+          'serviceKey': serviceKey,
+          '_type': 'json',
+        },
+      );
+      try {
+        final response = await get(uri);
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final body = data['response']['body'];
+          final item = body['items']['item'];
+          String lunDate = '${item['lunYear']}-${item['lunMonth']}-${item['lunDay']}';
+          state = state.copyWith(lunarDate: DateTime.parse(lunDate));
+        }
+      } catch (e) {
+        print('요청실패 : $e');
+      }
     }
-    print(fiveLengthSchedule);
-    loadDailySchedule(fiveLengthSchedule.last);
-    for (var i in fiveLengthSchedule) {}
   }
 
-  Future<void> loadDailySchedule(String day) async {
-    DateTime target = DateTime.parse(day);
-    var targetMillis = target.millisecondsSinceEpoch;
-    final snapshot = await FirebaseFirestore.instance.collection('Schedule').doc(date_to_string_yyMM('-', target)).get();
-    print(day);
-    print(snapshot.data());
+  Future<void> loadDailySchedule() async {
+    String strDate = date_to_string_yyyyMMdd('-', state.targetDate);
+    final snapshot = await store.collection('Schedule').doc(strDate).get();
+    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+    final sortData = data.entries.toList()..sort((a, b) => b.value['date'].length.compareTo(a.value['date'].length));
+    data = Map.fromEntries(sortData);
+
+    List<ScheduleModel> result = [];
+    for (var i in data.entries) {
+      Map<String, dynamic> modelMap = i.value;
+      modelMap['date'] = List<String>.from(modelMap['date']);
+      modelMap['id'] = i.key;
+      ScheduleModel model = ScheduleModel.fromMap(i.value);
+      result.add(model);
+    }
+
+    state = state.copyWith(dailySchedules: result);
+  }
+
+  void setSchedule(ScheduleModel model) {
+    state = state.copyWith(schedule: model);
+  }
+
+  Future<void> deleteSchedule() async {
+    final schedules = await store
+        .collection('Schedule')
+        .orderBy(FieldPath.documentId)
+        .where(FieldPath.documentId, isGreaterThanOrEqualTo: state.schedule.startDate)
+        .where(FieldPath.documentId, isLessThanOrEqualTo: state.schedule.endDate)
+        .get();
+
+    final batch = store.batch();
+
+    for (var i in schedules.docs) {
+      batch.update(i.reference, {state.schedule.id!: FieldValue.delete()});
+    }
+    try {
+      await batch.commit();
+      await loadSchedule();
+      await loadDailySchedule();
+      Map<String, dynamic> search = state.searchSchedule;
+      for (var i in search.entries) {
+        for (var model in i.value) {
+          if (model.id == state.schedule.id) {
+            search[i.key].remove(model);
+          }
+        }
+      }
+      state = state.copyWith(searchSchedule: search);
+    } catch (e) {
+      print('커밋 에러 $e');
+    }
+  }
+
+  Future<void> searchSchedule(String type, dynamic search) async {
+    DateTime now = DateTime.now();
+    DateTime searchStart = DateTime(now.year - 2, now.month, now.day);
+    DateTime searchEnd = DateTime(now.year + 2, now.month, now.day);
+    String strStart = date_to_string_yyyyMMdd('-', searchStart);
+    String strEnd = date_to_string_yyyyMMdd('-', searchEnd);
+    final schedules = await store
+        .collection('Schedule')
+        .orderBy(FieldPath.documentId)
+        .where(FieldPath.documentId, isGreaterThanOrEqualTo: strStart)
+        .where(FieldPath.documentId, isLessThanOrEqualTo: strEnd)
+        .get();
+    Map<String, List<ScheduleModel>> result = {};
+
+    for (var doc in schedules.docs) {
+      for (var data in doc.data().entries) {
+        if ((type == 'color' && data.value['colorCode'] == int.parse(search)) ||
+            (type == 'text' && (data.value['title'].contains(search) || data.value['note'].contains(search)))) {
+          if (!result.containsKey(doc.id)) {
+            result[doc.id] = [];
+          }
+          Map<String, dynamic> modelMap = data.value;
+          modelMap['id'] = data.key;
+          modelMap['date'] = List<String>.from(data.value['date']);
+          ScheduleModel model = ScheduleModel.fromMap(modelMap);
+          result[doc.id]!.add(model);
+        }
+      }
+    }
+    state = state.copyWith(searchSchedule: result);
+  }
+
+  void clearSearchResult() {
+    state = state.copyWith(searchSchedule: {});
   }
 }
 

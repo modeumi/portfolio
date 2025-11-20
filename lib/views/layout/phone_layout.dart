@@ -228,7 +228,7 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> {
                                   ),
                                 ),
                               ),
-                            if (layoutState.actionLoading) Center(child: LoadingAnimationWidget.stretchedDots(color: primary, size: 30)),
+                            if (layoutState.actionLoading) Center(child: LoadingAnimationWidget.threeArchedCircle(color: secondary, size: 40)),
                           ],
                         ),
                       ),

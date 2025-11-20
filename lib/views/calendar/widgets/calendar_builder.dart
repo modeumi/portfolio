@@ -106,11 +106,11 @@ Widget calendarScheduleBuild(bool outside, DateTime focusedDay, DateTime day) {
 // 선택된 범위 내 날짜 : 사각형 // primary 배경 / 테두리 pwhite
 // 시작 날짜 : 왼쪽 둥근 사각형 // primary 배경 / 테두리 pwhite
 // 끝 날짜 : 오른쪽 둥근 사각형 // primary 배경 / 테두리 pwhite
-Widget calendarDaySelectBuild(DateTime day, DateTime startDate, DateTime endDate, bool outside) {
+Widget calendarDaySelectBuild(DateTime day, String startDate, String endDate, bool outside) {
   // 문자열 변환 없이 직접 비교 (DateTime을 비교할 때 훨씬 빠름)
   final dayDate = DateTime(day.year, day.month, day.day);
-  final start = DateTime(startDate.year, startDate.month, startDate.day);
-  final end = DateTime(endDate.year, endDate.month, endDate.day);
+  final start = DateTime.parse(startDate);
+  final end = DateTime.parse(endDate);
   final now = DateTime.now();
   final currentNow = DateTime(now.year, now.month, now.day);
 

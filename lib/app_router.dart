@@ -1,7 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:portfolio/views/calendar/calendar_add_schedule_page.dart';
+import 'package:portfolio/views/calendar/calendar_daliy_schedule_page.dart';
+import 'package:portfolio/views/calendar/calendar_detail_page.dart';
 import 'package:portfolio/views/calendar/calendar_page.dart';
+import 'package:portfolio/views/calendar/calendar_search_page.dart';
 import 'package:portfolio/views/home/home_page.dart';
 import 'package:portfolio/views/layout/field_layout.dart';
 import 'package:portfolio/views/loading/loading_page.dart';
@@ -31,6 +35,20 @@ final routerProvider = Provider<GoRouter>((ref) {
 
           GoRoute(path: '/calendar', builder: (context, state) => CalendarPage()),
           GoRoute(path: '/calendar_add_schedule', builder: (context, state) => CalendarAddSchedulePage()),
+          GoRoute(path: '/calendar_detail', builder: (context, state) => CalendarDetailPage()),
+          GoRoute(path: '/calendar_search', builder: (context, state) => CalendarSearchPage()),
+          GoRoute(
+            path: '/calendar_daily_schedule',
+            pageBuilder: (context, state) {
+              return CustomTransitionPage(
+                opaque: false,
+                child: CalendarDaliySchedulePage(),
+                transitionsBuilder: (_, animation, __, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+              );
+            },
+          ),
         ],
       ),
       ShellRoute(
