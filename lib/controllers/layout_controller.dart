@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ import 'package:portfolio/controllers/message_controller.dart';
 import 'package:utility/format.dart';
 
 class LayoutState {
+  final bool admin;
   final bool bootLoading;
   final bool actionLoading;
   final bool power;
@@ -32,6 +34,7 @@ class LayoutState {
   final OverlayEntry? overlay;
 
   const LayoutState({
+    this.admin = false,
     this.bootLoading = false,
     this.actionLoading = false,
     this.power = true,
@@ -51,6 +54,7 @@ class LayoutState {
   });
 
   LayoutState copyWith({
+    bool? admin,
     bool? bootLoading,
     bool? actionLoading,
     bool? power,
@@ -69,6 +73,7 @@ class LayoutState {
     OverlayEntry? overlay,
   }) {
     return LayoutState(
+      admin: admin ?? this.admin,
       bootLoading: bootLoading ?? this.bootLoading,
       actionLoading: actionLoading ?? this.actionLoading,
       power: power ?? this.power,
@@ -90,8 +95,16 @@ class LayoutController extends StateNotifier<LayoutState> {
   final Ref ref;
   LayoutController(this.ref) : super(LayoutState());
 
+  final auth = FirebaseAuth.instance;
+
   Future<void> setPhoneInit() async {
     await loadSvg('assets/images/phone.svg');
+  }
+
+  void setAdmin() {
+    final admin = auth.currentUser;
+    bool result = admin != null;
+    state = state.copyWith(admin: result);
   }
 
   Future<void> loadSvg(String assetPath) async {
@@ -127,8 +140,8 @@ class LayoutController extends StateNotifier<LayoutState> {
     state = state.copyWith(actionLoading: true);
     try {
       await task();
-    } catch (e, _) {
-      print("에러 발생: $e");
+    } catch (e, y) {
+      print("에러 발생: $e \n\n$y");
     } finally {
       state = state.copyWith(actionLoading: false);
     }
@@ -165,7 +178,7 @@ class LayoutController extends StateNotifier<LayoutState> {
       if (location == '/message') {
         ref.invalidate(messageControllerProvider);
       } else if (location == '/calendar') {
-        ref.invalidate(calendarControllerProvider);
+        // ref.invalidate(calendarControllerProvider);
         // 이번달 데이터만 load 하는 코드추가
       }
       backAndChangeColor(context, false);

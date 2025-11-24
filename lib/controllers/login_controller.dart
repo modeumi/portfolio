@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
+import 'package:portfolio/controllers/layout_controller.dart';
 
 class LoginState {
   final String id;
@@ -24,7 +26,9 @@ class LoginState {
 }
 
 class LoginController extends StateNotifier<LoginState> {
-  LoginController() : super(LoginState());
+  final Ref ref;
+
+  LoginController(this.ref) : super(LoginState());
 
   final auth = FirebaseAuth.instance;
 
@@ -54,7 +58,8 @@ class LoginController extends StateNotifier<LoginState> {
       await auth.signInWithEmailAndPassword(email: state.id, password: state.password);
 
       state = state.copyWith(wrongMessage: '');
-
+      final layoutcontroller = ref.read(layoutControllerProvider.notifier);
+      layoutcontroller.setAdmin();
       context.go('/manage');
     } catch (e) {
       state = state.copyWith(wrongMessage: '아이디 혹은 비밀번호가 존재하지 않습니다.');
@@ -63,11 +68,13 @@ class LoginController extends StateNotifier<LoginState> {
   }
 
   Future<void> logout(BuildContext context) async {
+    final layoutcontroller = ref.read(layoutControllerProvider.notifier);
+    layoutcontroller.setAdmin();
     await auth.signOut();
     context.go('/login');
   }
 }
 
 final loginControllerProvider = StateNotifierProvider<LoginController, LoginState>((ref) {
-  return LoginController();
+  return LoginController(ref);
 });

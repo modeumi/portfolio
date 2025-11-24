@@ -125,7 +125,7 @@ class _CalendarDaliySchedulePageState extends ConsumerState<CalendarDaliySchedul
                               children: [
                                 for (var i in calendarState.dailySchedules)
                                   if (i.date!.length > 1 || i.allDay == true)
-                                    GestureDetector(
+                                    InkWell(
                                       onTap: () {
                                         calendarController.setSchedule(i);
                                         context.push('/calendar_detail');
@@ -173,7 +173,7 @@ class _CalendarDaliySchedulePageState extends ConsumerState<CalendarDaliySchedul
                                       ),
                                     )
                                   else
-                                    GestureDetector(
+                                    InkWell(
                                       onTap: () {
                                         calendarController.setSchedule(i);
                                         context.push('/calendar_detail');
@@ -250,22 +250,22 @@ class _CalendarDaliySchedulePageState extends ConsumerState<CalendarDaliySchedul
                         child: LayoutBuilder(
                           builder: (context, constraints) {
                             double width = constraints.maxWidth;
-                            return GestureDetector(
+                            return InkWell(
                               onTap: () async {
                                 calendarController.initAddSchedule();
                                 if (quick.text.trim().replaceAll(' ', '') != '') {
                                   Map<String, dynamic> data = {'title': quick.text, 'note': '', 'allDay': true};
-                                  bool result = await calendarController.addSchedule(data);
-                                  if (result) {
-                                    calendarController.loadDailySchedule();
-                                    quick.clear();
-                                  } else {
+                                  if (!layoutState.admin) {
                                     showDialog(
                                       context: context,
                                       builder: (context) =>
-                                          ModalWidget(title: '오류', action: () {}, content: '일정 등록에 실패하였습니다.\n잠시 후 다시 시도해주세요.', select_button: true),
+                                          ModalWidget(width: 300, title: '권한', action: () {}, content: '해당 동작을 위한 권한이 없습니다.', select_button: true),
                                     );
+                                    return;
                                   }
+                                  await calendarController.addSchedule(data);
+                                  calendarController.loadDailySchedule();
+                                  quick.clear();
                                 }
                               },
                               child: Container(

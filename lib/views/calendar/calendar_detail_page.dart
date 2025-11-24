@@ -138,7 +138,7 @@ class _CalendarDetailPageState extends ConsumerState<CalendarDetailPage> with Ri
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              GestureDetector(
+              InkWell(
                 onTap: () {
                   calendarController.changeEdit(true);
                   context.push('/calendar_add_schedule');
@@ -154,8 +154,15 @@ class _CalendarDetailPageState extends ConsumerState<CalendarDetailPage> with Ri
                   ),
                 ),
               ),
-              GestureDetector(
+              InkWell(
                 onTap: () async {
+                  if (!layoutState.admin) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => ModalWidget(width: 300, title: '권한', action: () {}, content: '해당 동작을 위한 권한이 없습니다.', select_button: true),
+                    );
+                    return;
+                  }
                   layoutController.changeDialogState(true);
                   bool? result = await showDialog(
                     context: context,

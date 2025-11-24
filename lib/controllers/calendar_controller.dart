@@ -1,8 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:portfolio/models/schedules_model.dart';
 import 'package:utility/format.dart';
@@ -22,6 +20,8 @@ class CalendarState {
 
   final List<ScheduleModel> dailySchedules;
   final List<String> holiday;
+  final Map<int, List<String>> calendarRows;
+
   final List<int> paletteColorList = [
     0xFF7986CC,
     0xFFD44245,
@@ -36,10 +36,12 @@ class CalendarState {
     0xFFB093E7,
     0xFFA9A9A9,
   ];
+
   CalendarState({
     this.edit = false,
     DateTime? targetDate,
     DateTime? lunarDate,
+    Map<int, List<String>>? calendarRows,
     ScheduleModel? schedule,
     Map<String, dynamic>? schedules,
     Map<String, dynamic>? searchSchedule,
@@ -51,7 +53,8 @@ class CalendarState {
        schedules = schedules ?? {},
        searchSchedule = searchSchedule ?? {},
        holiday = holiday ?? [],
-       dailySchedules = dailySchedules ?? [];
+       dailySchedules = dailySchedules ?? [],
+       calendarRows = calendarRows ?? {};
 
   CalendarState copyWith({
     DateTime? targetDate,
@@ -62,6 +65,7 @@ class CalendarState {
     List<String>? holiday,
     bool? edit,
     List<ScheduleModel>? dailySchedules,
+    Map<int, List<String>>? calendarRows,
   }) {
     return CalendarState(
       targetDate: targetDate ?? this.targetDate,
@@ -72,6 +76,7 @@ class CalendarState {
       searchSchedule: searchSchedule ?? this.searchSchedule,
       holiday: holiday ?? this.holiday,
       dailySchedules: dailySchedules ?? this.dailySchedules,
+      calendarRows: calendarRows ?? this.calendarRows,
     );
   }
 }
@@ -84,6 +89,7 @@ class CalendarController extends StateNotifier<CalendarState> {
   Future<void> changeCalendarDate(DateTime date) async {
     DateTime beforeDate = state.targetDate;
     state = state.copyWith(targetDate: date);
+    setCalendarRows();
     await getSolarDate();
     if (state.targetDate.month != beforeDate.month) {
       await getHoliday();
@@ -203,7 +209,7 @@ class CalendarController extends StateNotifier<CalendarState> {
     state = state.copyWith(schedule: model);
   }
 
-  Future<bool> addSchedule(Map<String, dynamic> data) async {
+  Future<void> addSchedule(Map<String, dynamic> data) async {
     Map<String, dynamic> scheduleData = state.schedule.toMap();
     scheduleData.addAll(data);
 
@@ -228,9 +234,9 @@ class CalendarController extends StateNotifier<CalendarState> {
       }
       await loadSchedule();
       await loadDailySchedule();
-      return true;
+      setCalendarRows();
     } catch (e) {
-      return false;
+      print('에러 : $e');
     }
   }
 
@@ -432,6 +438,58 @@ class CalendarController extends StateNotifier<CalendarState> {
 
   void clearSearchResult() {
     state = state.copyWith(searchSchedule: {});
+  }
+
+  void setCalendarRows() {
+    Map<int, List<String>> result = {};
+
+    DateTime beforeMonthLastDay = DateTime(state.targetDate.year, state.targetDate.month, 0);
+    DateTime monthFirstDay = DateTime(state.targetDate.year, state.targetDate.month, 1);
+    DateTime monthLastDay = DateTime(state.targetDate.year, state.targetDate.month + 1, 0);
+
+    int week = 1;
+
+    int firstWeekday = monthFirstDay.weekday % 7; // Dart는 월요일=1, 일요일=7이라 0으로 맞춤
+
+    // 첫째주 지난달 일자 채우기
+    if (week == 1) {
+      result[week] = [];
+      int calendarFirstDay = beforeMonthLastDay.day - firstWeekday + 1;
+      for (int i = calendarFirstDay; i <= beforeMonthLastDay.day; i++) {
+        String strDate = date_to_string_yyyyMMdd('-', otherMonth(false, i));
+        result[week]!.add(strDate);
+      }
+    }
+
+    // 이번달 달력 채우기
+    for (int day = 1; day <= monthLastDay.day; day++) {
+      if (result[week] == null) {
+        result[week] = [];
+      }
+      DateTime date = DateTime(state.targetDate.year, state.targetDate.month, day);
+      String strDate = date_to_string_yyyyMMdd('-', date);
+      result[week]!.add(strDate);
+      if (result[week]!.length == 7) {
+        week++;
+      }
+    }
+
+    // 마지막주 다음달 채우기
+    if (result[result.keys.last]!.length != 7) {
+      int nextMonth = 1;
+      while (result[result.keys.last]!.length < 7) {
+        String strDate = date_to_string_yyyyMMdd('-', otherMonth(true, nextMonth));
+        result[result.keys.last]!.add(strDate);
+        nextMonth++;
+      }
+    }
+    state = state.copyWith(calendarRows: result);
+  }
+
+  DateTime otherMonth(bool type, int day) {
+    int month = state.targetDate.month + (type ? 1 : -1);
+    DateTime returnDate = DateTime(state.targetDate.year, month, day);
+    return returnDate;
   }
 }
 

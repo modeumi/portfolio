@@ -38,7 +38,7 @@ class _CalendarSearchPageState extends ConsumerState<CalendarSearchPage> with Ri
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 15, vertical: 50),
+      padding: EdgeInsets.fromLTRB(15, 40, 15, 60),
       decoration: BoxDecoration(color: backSurface),
       width: app_width,
       height: app_height,

@@ -45,8 +45,7 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> {
               decoration: BoxDecoration(color: pBackBlack),
               child: LoadingIndicator(color: primary),
             )
-          : layoutState.power
-          ? Stack(
+          : Stack(
               children: [
                 if (layoutState.svgData != null)
                   Center(
@@ -229,6 +228,15 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> {
                                 ),
                               ),
                             if (layoutState.actionLoading) Center(child: LoadingAnimationWidget.threeArchedCircle(color: secondary, size: 40)),
+                            if (!layoutState.power)
+                              GestureDetector(
+                                onDoubleTap: () => controller.setPower(true),
+                                child: Container(
+                                  width: app_width,
+                                  height: app_height,
+                                  decoration: BoxDecoration(color: color_black),
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -236,14 +244,6 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> {
                   ),
                 ),
               ],
-            )
-          : GestureDetector(
-              onDoubleTap: () => controller.setPower(true),
-              child: Container(
-                width: app_width,
-                height: app_height,
-                decoration: BoxDecoration(color: color_black),
-              ),
             ),
     );
   }

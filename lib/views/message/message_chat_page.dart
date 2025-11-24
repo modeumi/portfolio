@@ -24,7 +24,6 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
   TextEditingController password = TextEditingController();
   TextEditingController lockPassword = TextEditingController();
   bool showMessage = false;
-  bool admin = false;
   bool answer = false;
   bool lock = false;
   String message = '비밀번호를 입력해주세요.';
@@ -38,9 +37,6 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
         await messageController.loadChat(true);
       });
       await scrollToBottom();
-      setState(() {
-        admin = messageController.checkAdmin();
-      });
     });
   }
 
@@ -92,7 +88,7 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
                 mainAxisAlignment: MainAxisAlignment.end,
                 spacing: 5,
                 children: [
-                  if (admin)
+                  if (layoutState.admin)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       spacing: 5,

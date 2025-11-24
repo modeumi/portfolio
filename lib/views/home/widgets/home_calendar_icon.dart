@@ -20,7 +20,7 @@ class _HomeCalendarIconState extends State<HomeCalendarIcon> {
       width: double.infinity,
       child: GestureDetector(
         onTap: () {
-          context.push('/calendar');
+          context.push('/calendar', extra: 'home');
         },
         child: Column(
           spacing: 5,

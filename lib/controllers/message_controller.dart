@@ -96,15 +96,6 @@ class MessageController extends StateNotifier<MessageState> {
     }
   }
 
-  bool checkAdmin() {
-    final admin = FirebaseAuth.instance.currentUser;
-    if (admin != null) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   Future<String> sendChat(String message, String password, bool answer, bool lock) async {
     bool firstChat = state.chats.isEmpty;
     if (!firstChat) {
