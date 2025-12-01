@@ -7,6 +7,7 @@ import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/custom_text_field.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
+import 'package:utility/import_package.dart';
 import 'package:utility/textstyle.dart';
 
 class CalendarSearchPage extends ConsumerStatefulWidget {
@@ -60,12 +61,13 @@ class _CalendarSearchPageState extends ConsumerState<CalendarSearchPage> with Ri
           Container(
             padding: EdgeInsets.all(20),
             child: Row(
+              spacing: 15,
               children: [
                 InkWell(
                   onTap: () {
                     context.pop();
                   },
-                  child: Icon(Icons.keyboard_arrow_left_sharp, size: 50),
+                  child: SvgPicture.asset('images/top_back.svg', width: 50),
                 ),
                 Expanded(
                   child: searched

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
@@ -40,7 +41,7 @@ class _CalendarDetailPageState extends ConsumerState<CalendarDetailPage> with Ri
                         onTap: () {
                           context.pop();
                         },
-                        child: Icon(Icons.keyboard_arrow_left_rounded, size: 50),
+                        child: SvgPicture.asset('images/top_back.svg', width: 50),
                       ),
                     ],
                   ),

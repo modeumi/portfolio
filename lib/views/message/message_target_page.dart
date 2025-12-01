@@ -55,7 +55,7 @@ class _MessageTargetPageState extends ConsumerState<MessageTargetPage> with Rive
                     onTap: () {
                       context.pop();
                     },
-                    child: SvgPicture.asset('images/top_back.svg', color: color_black, width: 35),
+                    child: SvgPicture.asset('images/top_back.svg', color: color_black),
                   ),
                   Text('대화 대상 선택', style: black(26, FontWeight.w900)),
                 ],

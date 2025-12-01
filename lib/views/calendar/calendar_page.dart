@@ -7,6 +7,7 @@ import 'package:portfolio/core/widgets/custom_text_field.dart';
 import 'package:portfolio/views/calendar/widgets/calendar_view.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
+import 'package:utility/import_package.dart';
 import 'package:utility/modal_widget.dart';
 import 'package:utility/textstyle.dart';
 
@@ -60,7 +61,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
                   onTap: () {
                     layoutController.tabBack(context);
                   },
-                  child: Icon(Icons.keyboard_arrow_left, color: color_black, size: 40),
+                  child: SvgPicture.asset('images/top_back.svg', width: 40),
                 ),
                 Spacer(),
                 InkWell(

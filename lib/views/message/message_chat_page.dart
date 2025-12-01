@@ -433,7 +433,7 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
                         }
                       }
                     },
-                    child: SvgPicture.asset('images/send.svg', width: 40),
+                    child: SvgPicture.asset('images/message/send.svg', width: 40),
                   ),
                 ],
               ),

@@ -15,6 +15,8 @@ import 'package:portfolio/views/manage/manage_page.dart';
 import 'package:portfolio/views/message/message_chat_page.dart';
 import 'package:portfolio/views/message/message_list_page.dart';
 import 'package:portfolio/views/message/message_target_page.dart';
+import 'package:portfolio/views/note/note_page.dart';
+import 'package:portfolio/views/note/note_write_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -35,6 +37,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/message', builder: (context, state) => MessageListPage()),
           GoRoute(path: '/message_target', builder: (context, state) => MessageTargetPage()),
           GoRoute(path: '/message_chat', builder: (context, state) => MessageChatPage()),
+
+          GoRoute(path: '/note', builder: (context, state) => NotePage()),
+          GoRoute(path: '/note_write', builder: (context, state) => NoteWritePage()),
 
           GoRoute(
             path: '/calendar',

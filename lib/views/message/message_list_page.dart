@@ -89,7 +89,7 @@ class _MessageListPageState extends ConsumerState<MessageListPage> with Riverpod
                               color: pWhite,
                               boxShadow: [BoxShadow(offset: Offset(0, 3), color: color_grey, blurRadius: 4)],
                             ),
-                            child: SvgPicture.asset('images/bubble.svg'),
+                            child: SvgPicture.asset('images/message/bubble.svg'),
                           ),
                         ),
                       ),
