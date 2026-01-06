@@ -15,6 +15,7 @@ class CustomTextField extends StatefulWidget {
   final bool? obscure;
   final int? maxLine;
   final int? maxLength;
+  final bool? readOnly;
   const CustomTextField({
     super.key,
     required this.controller,
@@ -26,6 +27,7 @@ class CustomTextField extends StatefulWidget {
     this.obscure,
     this.maxLine,
     this.maxLength,
+    this.readOnly,
   });
 
   @override
@@ -40,7 +42,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       data: TextSelectionThemeData(selectionHandleColor: primary),
       child: TextField(
         controller: widget.controller,
-        style: black(widget.fontSize ?? 20, widget.fontWeight ?? FontWeight.w800),
+        style: black(widget.fontSize ?? 20, widget.fontWeight ?? FontWeight.w800).copyWith(height: 1.2),
         cursorColor: primary,
         onChanged: (value) {
           if (widget.action != null) {
@@ -55,7 +57,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
         maxLines: widget.maxLine,
         autofocus: false,
         obscureText: widget.obscure ?? false,
+        readOnly: widget.readOnly ?? false,
         decoration: InputDecoration(
+          // contentPadding: EdgeInsets.zero,
+          // isDense: true,
+          isCollapsed: true,
           border: InputBorder.none,
           hintText: widget.hint,
           counterText: '',

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:portfolio/core/app_colors.dart';
+import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/views/home/widgets/home_calendar.dart';
 import 'package:portfolio/views/home/widgets/home_icon_field.dart';
-import 'package:portfolio/controllers/home_controller.dart';
-import 'package:utility/color.dart';
+import 'package:portfolio/views/home/widgets/home_note.dart';
 import 'package:utility/import_package.dart';
-import 'package:utility/textstyle.dart';
 
 class HomePageView extends ConsumerStatefulWidget {
   const HomePageView({super.key});
@@ -15,16 +14,14 @@ class HomePageView extends ConsumerStatefulWidget {
   ConsumerState<HomePageView> createState() => _HomePageViewState();
 }
 
-class _HomePageViewState extends ConsumerState<HomePageView> {
+class _HomePageViewState extends ConsumerState<HomePageView> with RiverpodMixin {
   @override
   Widget build(BuildContext context) {
-    final homeState = ref.watch(homeControllerProvider);
-    final controller = ref.read(homeControllerProvider.notifier);
     return Column(
       children: [
         Expanded(
           child: CarouselSlider(
-            carouselController: controller.pageController,
+            carouselController: homeController.pageController,
             options: CarouselOptions(
               initialPage: homeState.pageNumber,
               height: double.infinity,
@@ -32,7 +29,7 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
               enlargeCenterPage: false,
               viewportFraction: 1.0,
               onPageChanged: (index, reason) {
-                controller.setPageNumber(index);
+                homeController.setPageNumber(index);
               },
             ),
             items: [
@@ -53,47 +50,7 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
                 child: Column(
                   spacing: 20,
                   children: [
-                    Flexible(
-                      flex: 1,
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(color: pWhite, borderRadius: BorderRadius.circular(20)),
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                              decoration: BoxDecoration(
-                                border: Border(bottom: BorderSide(width: 1, color: color_black)),
-                              ),
-                              child: Row(
-                                spacing: 10,
-                                children: [
-                                  SizedBox(
-                                    width: 30,
-                                    height: 30,
-                                    child: ClipRRect(borderRadius: BorderRadiusGeometry.circular(10), child: SvgPicture.asset('images/note.svg')),
-                                  ),
-                                  Text('노트', style: black(18, FontWeight.w600)),
-                                  Spacer(),
-                                  GestureDetector(
-                                    onTap: () {
-                                      //TODO : 노트 이동 로직 작성
-                                    },
-                                    child: Icon(Icons.add),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                                child: Center(child: Text('작성된 노트가 없습니다.', style: black(18, FontWeight.w500))),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    Flexible(flex: 1, child: HomeNote()),
                     Flexible(flex: 2, child: HomeCalendar()),
                   ],
                 ),
@@ -111,7 +68,7 @@ class _HomePageViewState extends ConsumerState<HomePageView> {
               for (int i = 0; i < 2; i++)
                 GestureDetector(
                   onTap: () {
-                    controller.pushPageIcon(i);
+                    homeController.pushPageIcon(i);
                   },
                   child: SvgPicture.asset('images/${i == 0 ? 'home' : 'menu'}_icon.svg', color: homeState.pageNumber == i ? pWhite : null),
                 ),

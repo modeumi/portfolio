@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
+import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:utility/color.dart';
+import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
 import 'package:utility/textstyle.dart';
 
@@ -15,14 +17,18 @@ class NotePage extends ConsumerStatefulWidget {
 }
 
 class _NotePageState extends ConsumerState<NotePage> with RiverpodMixin {
-  Map<String, dynamic> sort = {'updateAt': '수정 날짜 순', 'createAt': '만든 날짜 순', 'title': '제목'};
+  Map<String, dynamic> sort = {'updateAt': '수정 날짜 순', 'createAt': '생성 날짜 순', 'title': '제목'};
   String selectSort = '';
-  bool sortType = false;
+  bool sortType = true;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       layoutController.changeColor(true);
+      layoutController.withLoading(() async {
+        await noteController.getNotes();
+        noteController.setSortInfo(sort.keys.first, true);
+      });
     });
     selectSort = sort.keys.first;
   }
@@ -32,6 +38,7 @@ class _NotePageState extends ConsumerState<NotePage> with RiverpodMixin {
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
         layoutController.changeColor(false);
       },
       child: Container(
@@ -50,23 +57,10 @@ class _NotePageState extends ConsumerState<NotePage> with RiverpodMixin {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text('노트', style: black(35, FontWeight.w700)),
-                          Text(
-                            '${noteState.noteFolder.keys.isNotEmpty ? '폴더 ${noteState.noteFolder.keys.length}개, ' : ''}노트 ${noteState.noteList.length}개',
-                            style: black(20, FontWeight.w600),
-                          ),
+                          Text('${noteState.noteList.length}개', style: black(20, FontWeight.w600)),
                         ],
                       ),
                     ),
-                    if (noteState.noteFolder.keys.isNotEmpty)
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                        child: GridView.builder(
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 8),
-                          itemBuilder: (context, index) {
-                            // String key = noteState.noteFolder.keys.toList()[index];
-                          },
-                        ),
-                      ),
                     Container(
                       padding: EdgeInsets.all(10),
                       width: double.infinity,
@@ -113,6 +107,7 @@ class _NotePageState extends ConsumerState<NotePage> with RiverpodMixin {
                                     setState(() {
                                       selectSort = value!;
                                     });
+                                    noteController.setSortInfo(selectSort, sortType);
                                   },
                                   dropdownStyleData: DropdownStyleData(
                                     padding: EdgeInsets.zero,
@@ -131,6 +126,7 @@ class _NotePageState extends ConsumerState<NotePage> with RiverpodMixin {
                                   setState(() {
                                     sortType = !sortType;
                                   });
+                                  noteController.setSortInfo(selectSort, sortType);
                                 },
                                 child: Icon(sortType ? Icons.arrow_upward_outlined : Icons.arrow_downward_outlined, color: color_grey),
                               ),
@@ -150,7 +146,83 @@ class _NotePageState extends ConsumerState<NotePage> with RiverpodMixin {
                             Text('노트를 작성하려면 추가 버튼을 누르세요.', style: custom(16, FontWeight.w400, font_grey)),
                           ],
                         ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: GridView.builder(
+                          shrinkWrap: true,
+                          itemCount: noteState.noteList.length,
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3, // 가로 3칸
+                            crossAxisSpacing: 20,
+                            mainAxisSpacing: 50,
+                            childAspectRatio: 0.5, // 정사각형
+                          ),
+                          itemBuilder: (context, index) {
+                            return InkWell(
+                              onTap: () {
+                                noteController.setNote(noteState.noteList[index]);
+                                noteController.runAutosave();
+                                context.push('/note_write');
+                              },
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                spacing: 10,
+                                children: [
+                                  Flexible(
+                                    flex: 8,
+                                    child: Container(
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: pWhite,
+                                        borderRadius: BorderRadius.circular(15),
+                                        boxShadow: [BoxShadow(offset: Offset(0, 2), color: pBackGrey2, blurRadius: 5)],
+                                      ),
+                                      child: Text(
+                                        noteState.noteList[index].content ?? '',
+                                        style: black(18, FontWeight.w400),
+                                        maxLines: 6,
+                                        overflow: TextOverflow.clip,
+                                      ),
+                                    ),
+                                  ),
+                                  Flexible(
+                                    flex: 4,
+                                    child: Builder(
+                                      builder: (context) {
+                                        DateTime now = DateTime.now();
+                                        DateTime noteCreateDate = DateTime.parse(noteState.noteList[index].createAt ?? '1999-12-31');
+                                        bool sameYear = now.year == noteCreateDate.year;
+                                        String showDate = sameYear
+                                            ? date_to_string_MMdd('kor', noteCreateDate)
+                                            : date_to_string_yyyyMMdd('kor', noteCreateDate);
+                                        return Column(
+                                          children: [
+                                            Text(
+                                              noteState.noteList[index].title != null && noteState.noteList[index].title != ''
+                                                  ? noteState.noteList[index].title!
+                                                  : '노트 ${noteCreateDate.month.toString().padLeft(2, '0')}${noteCreateDate.day.toString().padLeft(2, '0')}',
+                                              style: black(20, FontWeight.w700),
+                                              maxLines: 2,
+                                              textAlign: TextAlign.center,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            asText(showDate, grey(18, FontWeight.w400)),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ),
+                    SizedBox(height: app_height * 0.1),
                   ],
                 ),
               ),

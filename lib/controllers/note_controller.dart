@@ -5,27 +5,29 @@ import 'dart:math';
 import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:portfolio/models/note_model.dart';
+import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
 
 class NoteState {
   final NoteModel note;
 
-  final Map<String, List<NoteModel>> noteFolder;
-
   final List<NoteModel> noteList;
 
+  final String sortKey;
+
+  final bool sortType;
   final bool isChange;
   final bool isSaving;
 
-  NoteState({NoteModel? note, Map<String, List<NoteModel>>? noteFolder, List<NoteModel>? noteList, this.isChange = false, this.isSaving = false})
+  NoteState({NoteModel? note, this.sortKey = '', List<NoteModel>? noteList, this.sortType = false, this.isChange = false, this.isSaving = false})
     : note = note ?? NoteModel(),
-      noteFolder = noteFolder ?? {},
       noteList = noteList ?? [];
 
-  NoteState copyWith({NoteModel? note, Map<String, List<NoteModel>>? noteFolder, List<NoteModel>? noteList, bool? isChange, bool? isSaving}) {
+  NoteState copyWith({NoteModel? note, String? sortKey, List<NoteModel>? noteList, bool? sortType, bool? isChange, bool? isSaving}) {
     return NoteState(
       note: note ?? this.note,
-      noteFolder: noteFolder ?? this.noteFolder,
+      sortKey: sortKey ?? this.sortKey,
+      sortType: sortType ?? this.sortType,
       noteList: noteList ?? this.noteList,
       isChange: isChange ?? this.isChange,
       isSaving: isSaving ?? this.isSaving,
@@ -79,17 +81,84 @@ class NoteController extends StateNotifier<NoteState> {
 
   // 작성된 노트 저장 -> 5초마다 자동저장
   void saveNote() async {
-    print(state.isChange);
     if (!state.isChange) return;
     state = state.copyWith(isSaving: true, isChange: false);
-    Map<String, dynamic> note = state.note.toMap();
-    print(note);
-    // String id = note['id'];
-    // note.remove('id');
+    DateTime now = DateTime.now();
+    String datetime = '${date_to_string_yyyyMMdd('-', now)} ${time_to_string('hms', now)}';
+    NoteModel model = state.note;
+    if (state.note.createAt == null) {
+      model = model.copyWith(createAt: datetime);
+    }
+    model = model.copyWith(updateAt: datetime);
+    state = state.copyWith(note: model);
 
-    // await store.collection('Note').doc(id).set(note, SetOptions(merge: true));
+    Map<String, dynamic> note = state.note.toMap();
+
+    await store.collection('Note').doc(note['id']).set(note, SetOptions(merge: true));
 
     state = state.copyWith(isSaving: false);
+  }
+
+  Future<void> getNotes() async {
+    state = state.copyWith(noteList: []);
+    QuerySnapshot notes;
+    notes = await store.collection('Note').get();
+    List<NoteModel> modelList = [];
+    for (var i in notes.docs) {
+      Map<String, dynamic> data = i.data() as Map<String, dynamic>;
+      NoteModel model = NoteModel.fromMap(data);
+      modelList.add(model);
+    }
+
+    modelList.sort((a, b) {
+      DateTime aUpdateDate = DateTime.parse(a.updateAt ?? '1999-12-31');
+      DateTime bUpdateDate = DateTime.parse(b.updateAt ?? '1999-12-31');
+      return bUpdateDate.compareTo(aUpdateDate);
+    });
+
+    state = state.copyWith(noteList: modelList);
+  }
+
+  void sortNote() {
+    List<NoteModel> modelList = state.noteList;
+    String sortKey = state.sortKey;
+    bool sortType = state.sortType;
+    if (sortKey == 'updateAt') {
+      modelList.sort((a, b) {
+        DateTime aUpdateDate = DateTime.parse(a.updateAt ?? '1999-12-31');
+        DateTime bUpdateDate = DateTime.parse(b.updateAt ?? '1999-12-31');
+        return sortType ? bUpdateDate.compareTo(aUpdateDate) : aUpdateDate.compareTo(bUpdateDate);
+      });
+    } else if (sortKey == 'createAt') {
+      modelList.sort((a, b) {
+        DateTime aCreateDate = DateTime.parse(a.createAt ?? '1999-12-31');
+        DateTime bCreateDate = DateTime.parse(b.createAt ?? '1999-12-31');
+        return sortType ? bCreateDate.compareTo(aCreateDate) : aCreateDate.compareTo(bCreateDate);
+      });
+    } else if (sortKey == 'title') {
+      modelList.sort((a, b) {
+        String aTitle = (a.title ?? '').toLowerCase();
+        String bTitle = (b.title ?? '').toLowerCase();
+        if (aTitle == '' && bTitle == '') return 0;
+        if (aTitle == '') return 1;
+        if (bTitle == '') return -1;
+        return sortType ? bTitle.compareTo(aTitle) : aTitle.compareTo(bTitle);
+      });
+    }
+  }
+
+  void setSortInfo(String key, bool type) {
+    state = state.copyWith(sortKey: key, sortType: type);
+    sortNote();
+  }
+
+  void setNote(NoteModel model) {
+    state = state.copyWith(note: model);
+  }
+
+  Future<void> deleteNote() async {
+    await store.collection('Note').doc(state.note.id).delete();
+    await getNotes();
   }
 }
 

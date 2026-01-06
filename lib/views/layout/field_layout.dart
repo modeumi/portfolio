@@ -32,9 +32,7 @@ class _FieldLayoutState extends ConsumerState<FieldLayout> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(width: 1, color: color_black)),
-                  ),
+                  decoration: BoxDecoration(),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

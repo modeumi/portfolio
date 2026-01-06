@@ -260,7 +260,7 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
                         context: context,
                         builder: (context) => ModalWidget(
                           title: '안내',
-                          content: '첫 채팅 시 등록한 비밀번호로 이후 채팅 입력 시 비밀번호가 일치해야 입력이 가능합니다.',
+                          content: '첫 채팅 시 등록한 비밀번호이며, 채팅 전송 시 비밀번호가 일치해야 전송이 가능합니다.',
                           width: 400,
                           action: () {
                             layoutController.changeDialogState(false);

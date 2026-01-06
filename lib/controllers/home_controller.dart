@@ -16,11 +16,17 @@ class HomeState {
 
   final double menuOpacity;
 
+  final String selectFolder;
+
   final Map<String, dynamic> apps = {
     'bottomMenu': {'note': '노트', 'message': '채팅', 'calendar': '캘린더', 'apps': '앱스'}, // 하단에 띄울 앱, 이름 미출력
     'mainMenu': {'notion': 'Notion', 'github': 'GitHub', 'blog': '네이버 블로그'}, // 메인화면에 출력할 주요 앱
     'profile': {'profile': '내정보'}, // 내정보 앱
-    'sns': {'kakao': '카카오톡', 'discord': 'Discord'}, // 메인에는 출력하지않으나 앱스를 클릭했을때 출력할 앱
+    'etc': {'kakao': '카카오톡', 'discord': 'Discord', 'folder_1': '프로젝트'}, // 메인에는 출력하지않으나 앱스를 클릭했을때 출력할 앱
+  };
+
+  final Map<String, dynamic> folderData = {
+    'folder_1': {'ERP': '모빌리티 ERP', 'projectS': '프로젝트 S', 'sfac': '스팩스페이스', 'todayEat': '오늘뭐먹지?'},
   };
   final Map<String, dynamic> links = {
     'notion': 'https://bedecked-beetle-069.notion.site/Project-293f367dbc9e8038856dc5b65353f87f',
@@ -28,17 +34,22 @@ class HomeState {
     'github': 'https://github.com/modeumi',
     'kakao': 'https://open.kakao.com/o/sE4tdmYh',
     'discord': 'https://discord.com/users/393283108146774018',
+    'ERP': '',
+    'projectS': '',
+    'sfac': '',
+    'todayEat': '',
   };
 
-  HomeState({this.loading = true, this.initHome = false, this.menuOpen = false, this.menuOpacity = 0.0, this.pageNumber = 0});
+  HomeState({this.loading = true, this.initHome = false, this.menuOpen = false, this.menuOpacity = 0.0, this.pageNumber = 0, this.selectFolder = ''});
 
-  HomeState copyWith({bool? loading, bool? menuOpen, bool? initHome, double? menuOpacity, int? pageNumber}) {
+  HomeState copyWith({bool? loading, bool? menuOpen, bool? initHome, double? menuOpacity, int? pageNumber, String? selectFolder}) {
     return HomeState(
       loading: loading ?? this.loading,
       menuOpen: menuOpen ?? this.menuOpen,
       menuOpacity: menuOpacity ?? this.menuOpacity,
       pageNumber: pageNumber ?? this.pageNumber,
       initHome: initHome ?? this.initHome,
+      selectFolder: selectFolder ?? this.selectFolder,
     );
   }
 }
@@ -57,7 +68,9 @@ class HomeController extends StateNotifier<HomeState> {
     if (title == 'apps') {
       int pageNum = state.pageNumber;
       state = state.copyWith(menuOpen: true, menuOpacity: 1, pageNumber: pageNum);
-    } else if (state.apps['mainMenu'].keys.contains(title) || state.apps['sns'].keys.contains(title)) {
+    } else if (state.folderData.containsKey(title)) {
+      selectFolder(title);
+    } else if (state.links.containsKey(title)) {
       final Uri url = Uri.parse(state.links[title]);
       if (!await launchUrl(
         url,
@@ -73,7 +86,11 @@ class HomeController extends StateNotifier<HomeState> {
 
   void tabBack() {
     if (state.menuOpen) {
-      state = state.copyWith(menuOpen: false, menuOpacity: 0);
+      if (state.selectFolder != '') {
+        selectFolder('');
+      } else {
+        state = state.copyWith(menuOpen: false, menuOpacity: 0);
+      }
     } else if (state.pageNumber == 1) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         pushPageIcon(0);
@@ -113,9 +130,40 @@ class HomeController extends StateNotifier<HomeState> {
           ),
         ),
       );
+    } else if (state.folderData.containsKey(path)) {
+      return Container(
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(color: pWhite.withOpacity(0.5)),
+        child: GridView(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 3, mainAxisSpacing: 3),
+          children: [
+            for (var i in state.folderData[path].entries)
+              Container(
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
+                child: ClipRRect(borderRadius: BorderRadiusGeometry.circular(5), child: SvgPicture.asset('images/${i.key}.svg')),
+              ),
+          ],
+        ),
+      );
     } else {
       return SvgPicture.asset('images/$path.svg');
     }
+  }
+
+  void selectFolder(String key) {
+    state = state.copyWith(selectFolder: key);
+  }
+
+  String returnName(String key) {
+    String name = '';
+    for (var i in state.apps.entries) {
+      for (var app in i.value.entries) {
+        if (app.key == key) {
+          name = app.value;
+        }
+      }
+    }
+    return name;
   }
 }
 

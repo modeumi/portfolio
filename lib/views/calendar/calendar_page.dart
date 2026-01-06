@@ -129,7 +129,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
               emptyScheduleAction: () {
                 calendarController.changeEdit(false);
                 calendarController.initAddSchedule();
-                context.push('/calendar_add_schedule');
+                context.push('/calendar_add_schedule', extra: '');
               },
               existScheduleAction: () async {
                 await layoutController.withLoading(() async {

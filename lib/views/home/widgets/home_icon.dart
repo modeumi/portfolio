@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:portfolio/core/app_setting.dart';
-import 'package:portfolio/controllers/home_controller.dart';
+import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:utility/textstyle.dart';
 
 class HomeIcon extends ConsumerStatefulWidget {
@@ -14,13 +14,14 @@ class HomeIcon extends ConsumerStatefulWidget {
   ConsumerState<HomeIcon> createState() => _HomeIconState();
 }
 
-class _HomeIconState extends ConsumerState<HomeIcon> {
+class _HomeIconState extends ConsumerState<HomeIcon> with RiverpodMixin {
+  final GlobalKey buttonKey = GlobalKey();
   @override
   Widget build(BuildContext context) {
-    final controller = ref.read(homeControllerProvider.notifier);
-    return GestureDetector(
+    return InkWell(
+      key: buttonKey,
       onTap: () {
-        controller.tabIcon(context, widget.title);
+        homeController.tabIcon(context, widget.title);
       },
       child: SizedBox(
         width: double.infinity,
@@ -31,9 +32,9 @@ class _HomeIconState extends ConsumerState<HomeIcon> {
             SizedBox(
               width: app_width / 8,
               height: app_width / 8,
-              child: ClipRRect(borderRadius: BorderRadiusGeometry.circular(20), child: controller.buildImage(widget.title)),
+              child: ClipRRect(borderRadius: BorderRadiusGeometry.circular(20), child: homeController.buildImage(widget.title)),
             ),
-            if (widget.showContent) Text(widget.content, style: white(18, FontWeight.w500)),
+            if (widget.showContent) asText(widget.content, white(18, FontWeight.w500)),
           ],
         ),
       ),

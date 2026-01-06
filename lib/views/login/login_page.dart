@@ -35,14 +35,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       width: double.infinity,
       height: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-      decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(width: 1, color: color_black),
-          right: BorderSide(width: 1, color: color_black),
-          bottom: BorderSide(width: 1, color: color_black),
-        ),
-        color: back_grey_2,
-      ),
+      decoration: BoxDecoration(color: back_grey_2),
       child: Stack(
         children: [
           Center(

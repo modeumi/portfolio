@@ -94,6 +94,7 @@ class CalendarController extends StateNotifier<CalendarState> {
     if (state.targetDate.month != beforeDate.month) {
       await getHoliday();
     }
+    loadSchedule();
   }
 
   void changeEdit(bool type) {
