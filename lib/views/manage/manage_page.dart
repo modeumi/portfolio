@@ -137,14 +137,48 @@ class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin, Tic
 
   Widget _projectTab() {
     final projects = manageState.projectList;
-    if (projects.isEmpty) {
-      return Center(child: Text('등록된 프로젝트가 없습니다', style: custom(18, FontWeight.w400, font_grey)));
-    }
-    return ListView.separated(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, 40),
-      itemCount: projects.length,
-      separatorBuilder: (context, index) => SizedBox(height: 15),
-      itemBuilder: (context, index) => ProjectItem(model: projects[index]),
+    return Stack(
+      children: [
+        if (projects.isEmpty)
+          Center(child: Text('등록된 프로젝트가 없습니다', style: custom(18, FontWeight.w400, font_grey)))
+        else
+          ListView.separated(
+            padding: EdgeInsets.fromLTRB(20, 20, 20, 90),
+            itemCount: projects.length,
+            separatorBuilder: (context, index) => SizedBox(height: 15),
+            itemBuilder: (context, index) => ProjectItem(model: projects[index]),
+          ),
+        // 하단: 프로젝트 추가 버튼
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 20,
+          child: Center(
+            child: GestureDetector(
+              onTap: () {
+                manageController.newProject();
+                context.push('/project_write');
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                decoration: BoxDecoration(
+                  color: secondary,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [BoxShadow(offset: Offset(0, 4), color: pBackGrey2, blurRadius: 10)],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 8,
+                  children: [
+                    Icon(Icons.add, color: pWhite, size: 24),
+                    Text('프로젝트 추가', style: white(18, FontWeight.w700)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
