@@ -23,20 +23,21 @@ class ProjectContent extends StatelessWidget {
       customWidgetBuilder: (element) {
         if (!element.classes.contains('pf-shots')) return null;
 
-        // figure(없으면 img)에서 src/caption 추출
+        // pf-shots 안의 모든 img를 각각 한 장으로 수집 (figure에 여러 장 들어가도 OK)
+        // 캡션: img의 alt > 같은 figure의 figcaption 순. src가 비었거나 미치환(REPLACE)이면 건너뜀
         final List<({String src, String caption})> shots = [];
-        final figures = element.querySelectorAll('figure');
-        if (figures.isNotEmpty) {
-          for (final f in figures) {
-            final src = f.querySelector('img')?.attributes['src'] ?? '';
-            final caption = f.querySelector('figcaption')?.text.trim() ?? '';
-            if (src.isNotEmpty) shots.add((src: src, caption: caption));
+        for (final img in element.querySelectorAll('img')) {
+          final src = (img.attributes['src'] ?? '').trim();
+          if (src.isEmpty || src == 'REPLACE') continue;
+          String caption = (img.attributes['alt'] ?? '').trim();
+          if (caption.isEmpty) {
+            var n = img.parent;
+            while (n != null && n.localName != 'figure') {
+              n = n.parent;
+            }
+            caption = n?.querySelector('figcaption')?.text.trim() ?? '';
           }
-        } else {
-          for (final img in element.querySelectorAll('img')) {
-            final src = img.attributes['src'] ?? '';
-            if (src.isNotEmpty) shots.add((src: src, caption: ''));
-          }
+          shots.add((src: src, caption: caption));
         }
         if (shots.isEmpty) return const SizedBox.shrink();
 
