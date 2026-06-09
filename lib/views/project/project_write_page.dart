@@ -57,7 +57,7 @@ class _ProjectWritePageState extends ConsumerState<ProjectWritePage> with Riverp
     final key = '__img_${imgCounter++}__';
     pendingImages[key] = img;
 
-    final tag = '<img>$key</img>';
+    final tag = '<img src="$key">';
     final sel = content.selection;
     final text = content.text;
     String newText;
@@ -202,7 +202,7 @@ class _ProjectWritePageState extends ConsumerState<ProjectWritePage> with Riverp
                       children: [
                         Expanded(
                           child: Text(
-                            '내용  ·  태그: <b> <i> <size=24> <color=#hex> <br>',
+                            'HTML 작성 · <h2> <h3> <p> <b> <ul><li> <img src> 등',
                             style: custom(13, FontWeight.w400, font_grey),
                           ),
                         ),

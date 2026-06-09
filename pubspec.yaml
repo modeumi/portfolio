@@ -28,6 +28,7 @@ dependencies:
   wheel_picker: ^0.2.2
   dotted_border: ^3.1.0
   web: ^1.1.1
+  flutter_widget_from_html: ^0.17.0
 
 dev_dependencies:
   flutter_test:
@@ -61,4 +62,4 @@ flutter:
         - asset: assets/fonts/Pretendard-ExtraBold.ttf  
           weight: 800
         - asset: assets/fonts/Pretendard-Black.ttf
-          weight: 900        
+          weight: 900
