@@ -17,6 +17,9 @@ import 'package:portfolio/views/message/message_list_page.dart';
 import 'package:portfolio/views/message/message_target_page.dart';
 import 'package:portfolio/views/note/note_page.dart';
 import 'package:portfolio/views/note/note_write_page.dart';
+import 'package:portfolio/views/profile/profile_page.dart';
+import 'package:portfolio/views/project/project_detail_page.dart';
+import 'package:portfolio/views/project/project_write_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -78,6 +81,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(path: '/login', builder: (context, state) => LoginPage()),
           GoRoute(path: '/manage', builder: (context, state) => ManagePage()),
+          GoRoute(path: '/profile', builder: (context, state) => ProfilePage()),
+          GoRoute(path: '/project_detail', builder: (context, state) => ProjectDetailPage()),
+          GoRoute(path: '/project_write', builder: (context, state) => ProjectWritePage()),
         ],
       ),
     ],
