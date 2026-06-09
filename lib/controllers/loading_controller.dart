@@ -28,6 +28,13 @@ class LoadingController extends StateNotifier<LoadingState> {
     context.go('/');
   }
 
+  // 로딩 페이지를 거치지 않고(새로고침 등) phone 화면으로 바로 진입한 경우 부팅 상태로 처리
+  void bootPhone() {
+    if (!state.phoneBoot) {
+      state = state.copyWith(phoneBoot: true);
+    }
+  }
+
   void initLogout() {
     FirebaseAuth.instance.signOut();
   }

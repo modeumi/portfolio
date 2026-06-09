@@ -29,6 +29,16 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> with RiverpodMixin {
     Future.microtask(() => layoutController.setPhoneInit());
     Future.microtask(() => layoutController.setClock());
 
+    // 로딩 페이지를 거치지 않고(/manage 등에서 새로고침 후) phone 화면으로 바로 진입하면
+    // phoneBoot가 false로 남아 상단 상태바/하단 네비가 가려지므로, 부팅 상태로 보정한다.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final path = GoRouterState.of(context).uri.path;
+      if (path != '/loading') {
+        loadingController.bootPhone();
+      }
+    });
+
     html.window.onPopState.listen((event) {
       // 뒤로가기를 눌렀다면 무조건 특정 페이지로 이동
       WidgetsBinding.instance.addPostFrameCallback((_) {
