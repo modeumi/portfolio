@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/models/project_model.dart';
-import 'package:utility/color.dart';
-import 'package:utility/import_package.dart';
+import 'package:portfolio/views/project/widgets/project_icon.dart';
 import 'package:utility/textstyle.dart';
 
 class ProjectItem extends ConsumerStatefulWidget {
@@ -17,20 +16,6 @@ class ProjectItem extends ConsumerStatefulWidget {
 }
 
 class _ProjectItemState extends ConsumerState<ProjectItem> with RiverpodMixin {
-  // 아이콘 출력 (firebase storage URL / 임시 asset 모두 대응)
-  Widget buildIcon(String? icon) {
-    if (icon == null || icon.isEmpty) {
-      return Icon(Icons.folder_rounded, size: 30, color: color_grey);
-    }
-    if (icon.startsWith('http')) {
-      return Image.network(icon, width: 40, height: 40, fit: BoxFit.cover);
-    }
-    if (icon.endsWith('.svg')) {
-      return SvgPicture.asset(icon, width: 40, height: 40);
-    }
-    return Image.asset(icon, width: 40, height: 40, fit: BoxFit.cover);
-  }
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -48,7 +33,7 @@ class _ProjectItemState extends ConsumerState<ProjectItem> with RiverpodMixin {
         ),
         child: Row(
           children: [
-            SizedBox(width: 40, height: 40, child: Center(child: buildIcon(widget.model.icon))),
+            SizedBox(width: 40, height: 40, child: Center(child: projectIcon(widget.model.icon, 40))),
             SizedBox(width: 15),
             Expanded(
               child: Text(

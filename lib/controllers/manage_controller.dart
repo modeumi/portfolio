@@ -22,7 +22,16 @@ class ManageController extends StateNotifier<ManageState> {
   // TODO: 아래 임시 데이터(folderData) 대신 Firestore 'Projects' 컬렉션에서 가져오도록 교체
   Future<void> getProjects() async {
     final List<ProjectModel> temp = [
-      ProjectModel(id: 'ERP', name: '모빌리티 ERP', icon: 'images/ERP.svg', content: ''),
+      ProjectModel(
+        id: 'ERP',
+        name: '모빌리티 ERP',
+        icon: 'images/ERP.svg',
+        background: '#E3F3F9',
+        content:
+            '<size=22><b>버스 운수회사 통합 관리 시스템</b></size><br><br>'
+            '배차 · 정산 · 근태를 <color=#4A90A4><b>한 곳에서</b></color> 관리합니다.<br><br>'
+            '<size=15><color=#818181>* 본문은 특수 태그(size/color/b/img/br)로 꾸며집니다.</color></size>',
+      ),
       ProjectModel(id: 'projectS', name: '프로젝트 S', icon: 'images/projectS.svg', content: ''),
       ProjectModel(id: 'sfac', name: '스팩스페이스', icon: 'images/sfac.svg', content: ''),
       ProjectModel(id: 'todayEat', name: '오늘뭐먹지?', icon: 'images/todayEat.svg', content: ''),
