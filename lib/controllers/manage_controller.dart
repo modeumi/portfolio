@@ -1,9 +1,18 @@
+import 'dart:math';
+import 'dart:typed_data';
+
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:portfolio/models/project_model.dart';
 import 'package:utility/import_package.dart' hide ImageSource;
+
+// 업로드 전 로컬에 들고 있는 선택 이미지 (바이트 + mime)
+class PickedImage {
+  final Uint8List bytes;
+  final String mime;
+  PickedImage({required this.bytes, required this.mime});
+}
 
 class ManageState {
   final List<ProjectModel> projectList;
@@ -54,23 +63,23 @@ class ManageController extends StateNotifier<ManageState> {
     state = state.copyWith(project: p);
   }
 
-  // 갤러리에서 아이콘 선택 후 firebase storage 업로드 -> URL을 icon에 반영
-  Future<void> pickProjectIcon() async {
+  // 갤러리에서 이미지 선택 (업로드는 하지 않고 바이트만 반환)
+  Future<PickedImage?> pickImage() async {
     final ImagePicker picker = ImagePicker();
-    try {
-      final XFile? file = await picker.pickImage(source: ImageSource.gallery);
-      if (file == null) return;
-      if (!(file.mimeType?.startsWith('image/') ?? false)) return;
+    final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+    if (file == null) return null;
+    final String mime = file.mimeType ?? 'image/png';
+    if (!mime.startsWith('image/')) return null;
+    final Uint8List bytes = await file.readAsBytes();
+    return PickedImage(bytes: bytes, mime: mime);
+  }
 
-      final bytes = await file.readAsBytes();
-      final fileName = 'project_${DateTime.now().millisecondsSinceEpoch}';
-      final ref = FirebaseStorage.instance.ref().child('project/$fileName');
-      final upload = await ref.putData(bytes, SettableMetadata(contentType: file.mimeType));
-      final url = await upload.ref.getDownloadURL();
-      changeProjectField('icon', url);
-    } catch (e) {
-      debugPrint('아이콘 업로드 실패 : $e');
-    }
+  // 선택해 둔 이미지를 firebase storage에 업로드하고 다운로드 URL 반환
+  Future<String> uploadImage(PickedImage image, String folder) async {
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(100000)}';
+    final ref = FirebaseStorage.instance.ref().child('$folder/$fileName');
+    final upload = await ref.putData(image.bytes, SettableMetadata(contentType: image.mime));
+    return upload.ref.getDownloadURL();
   }
 
   // 작성한 프로젝트를 Firestore 'Projects'에 저장 (메모리 목록도 즉시 반영)
