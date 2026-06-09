@@ -57,16 +57,19 @@ class _ProjectWritePageState extends ConsumerState<ProjectWritePage> with Riverp
     final key = '__img_${imgCounter++}__';
     pendingImages[key] = img;
 
-    final tag = '<img src="$key">';
     final sel = content.selection;
     final text = content.text;
+    final bool hasSelection = sel.isValid && sel.start != sel.end;
+    // 선택 영역(예: src="REPLACE"의 REPLACE)이 있으면 그 자리에 토큰만 넣어 src 값을 채우고,
+    // 선택이 없으면 완전한 <img> 태그를 삽입한다. (저장 시 토큰이 storage URL로 치환됨)
+    final String insert = hasSelection ? key : '<img src="$key">';
     String newText;
     int newOffset;
     if (sel.isValid && sel.start >= 0) {
-      newText = text.replaceRange(sel.start, sel.end, tag);
-      newOffset = sel.start + tag.length;
+      newText = text.replaceRange(sel.start, sel.end, insert);
+      newOffset = sel.start + insert.length;
     } else {
-      newText = text + tag;
+      newText = text + insert;
       newOffset = newText.length;
     }
     content.text = newText;
