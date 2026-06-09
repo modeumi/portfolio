@@ -44,11 +44,11 @@ class _ProjectWritePageState extends ConsumerState<ProjectWritePage> with Riverp
     if (mounted) setState(() => iconLoading = false);
   }
 
-  void save() {
+  Future<void> save() async {
     manageController.changeProjectField('name', title.text);
     manageController.changeProjectField('content', content.text);
-    manageController.saveProject();
-    context.pop();
+    await manageController.saveProject();
+    if (mounted) context.pop();
   }
 
   @override
