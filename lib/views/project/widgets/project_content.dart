@@ -39,7 +39,14 @@ class ProjectContent extends StatelessWidget {
           case 'h2':
             return {'font-size': '24px', 'font-weight': '800', 'margin': '18px 0 6px'};
           case 'h3':
-            return {'font-size': '19px', 'font-weight': '700', 'color': '#4A90A4', 'margin': '16px 0 6px'};
+            // style에 색을 직접 준 h3는 그 색을 존중, 아니면 기본 강조색
+            final hasColor = (element.attributes['style'] ?? '').contains('color');
+            return {
+              'font-size': '19px',
+              'font-weight': '700',
+              if (!hasColor) 'color': '#4A90A4',
+              'margin': '16px 0 6px',
+            };
         }
 
         final classes = element.classes;
