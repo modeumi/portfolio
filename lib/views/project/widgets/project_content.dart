@@ -9,7 +9,7 @@ import 'package:utility/textstyle.dart';
 /// 그대로 해석되고, 포트폴리오용 클래스(`pf-card` `pf-sub` `pf-feat` `pf-tags` `pf-shots`)에는
 /// 기본 스타일을 입혀 준다. content 이미지는 `<img src="https://...">`(firebase storage) 형식.
 ///
-/// `pf-shots`(스크린샷 묶음)는 가로 스크롤 Row로 렌더링한다.
+/// `<figure>`(스크린샷 묶음)는 "사진들 가로 한 줄 + 그 아래 캡션 1개"로 렌더링한다.
 class ProjectContent extends StatelessWidget {
   final String content;
   const ProjectContent(this.content, {super.key});
@@ -19,53 +19,20 @@ class ProjectContent extends StatelessWidget {
     return HtmlWidget(
       content,
       textStyle: custom(18, FontWeight.w400, color_black).copyWith(height: 1.5),
-      // 스크린샷 묶음(pf-shots)은 가로 스크롤 Row로 직접 렌더링
+      // figure 단위로: 안의 사진들을 가로 한 줄로, figcaption은 그 아래 한 번만
       customWidgetBuilder: (element) {
-        if (!element.classes.contains('pf-shots')) return null;
+        if (element.localName != 'figure') return null;
 
-        // pf-shots 안의 모든 img를 각각 한 장으로 수집 (figure에 여러 장 들어가도 OK)
-        // 캡션: img의 alt > 같은 figure의 figcaption 순. src가 비었거나 미치환(REPLACE)이면 건너뜀
-        final List<({String src, String caption})> shots = [];
+        final List<String> images = [];
         for (final img in element.querySelectorAll('img')) {
           final src = (img.attributes['src'] ?? '').trim();
-          if (src.isEmpty || src == 'REPLACE') continue;
-          String caption = (img.attributes['alt'] ?? '').trim();
-          if (caption.isEmpty) {
-            var n = img.parent;
-            while (n != null && n.localName != 'figure') {
-              n = n.parent;
-            }
-            caption = n?.querySelector('figcaption')?.text.trim() ?? '';
-          }
-          shots.add((src: src, caption: caption));
+          if (src.isEmpty || src == 'REPLACE') continue; // 미치환/빈 src는 제외
+          images.add(src);
         }
-        if (shots.isEmpty) return const SizedBox.shrink();
+        if (images.isEmpty) return null; // 이미지 없으면 기본 렌더링
 
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final double w = constraints.maxWidth;
-            final double itemW = (w / 2) - 14; // 화면 절반에서 여백만큼 더 뺌
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: ConstrainedBox(
-                // 사진이 적으면(1~2장) 중앙 정렬, 많으면 그대로 늘어나 스크롤
-                constraints: BoxConstraints(minWidth: w),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (final s in shots)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: SizedBox(width: itemW, child: _shot(s.src, s.caption, itemW)),
-                      ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
+        final caption = element.querySelector('figcaption')?.text.trim() ?? '';
+        return _figureGallery(images, caption);
       },
       customStylesBuilder: (element) {
         switch (element.localName) {
@@ -73,8 +40,6 @@ class ProjectContent extends StatelessWidget {
             return {'font-size': '24px', 'font-weight': '800', 'margin': '18px 0 6px'};
           case 'h3':
             return {'font-size': '19px', 'font-weight': '700', 'color': '#4A90A4', 'margin': '16px 0 6px'};
-          case 'figcaption':
-            return {'font-size': '13px', 'color': '#818181', 'text-align': 'center', 'margin': '4px 0 14px'};
         }
 
         final classes = element.classes;
@@ -103,41 +68,72 @@ class ProjectContent extends StatelessWidget {
     );
   }
 
-  // 스크린샷 1장: 이미지 + 캡션
-  Widget _shot(String src, String caption, double width) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.network(
-            src,
+  // figure: 사진들을 가로 한 줄(1장 중앙 / 2장 꽉참 / 그 이상 좌우 스크롤) + 아래 캡션 1개
+  Widget _figureGallery(List<String> images, String caption) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final double w = constraints.maxWidth;
+          final double itemW = (w / 2) - 14; // 화면 절반에서 여백만큼 더 뺌
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: ConstrainedBox(
+                  // 사진이 적으면(1~2장) 중앙 정렬, 많으면 그대로 늘어나 스크롤
+                  constraints: BoxConstraints(minWidth: w),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final src in images)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: SizedBox(width: itemW, child: _image(src, itemW)),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              if (caption.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(caption, style: custom(14, FontWeight.w500, font_grey), textAlign: TextAlign.center),
+              ],
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // 사진 1장 (로딩/에러 플레이스홀더 포함)
+  Widget _image(String src, double width) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.network(
+        src,
+        width: width,
+        fit: BoxFit.fitWidth,
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return Container(
             width: width,
-            fit: BoxFit.fitWidth,
-            loadingBuilder: (context, child, progress) {
-              if (progress == null) return child;
-              return Container(
-                width: width,
-                height: width,
-                color: back_grey_2,
-                alignment: Alignment.center,
-                child: const CircularProgressIndicator(strokeWidth: 2),
-              );
-            },
-            errorBuilder: (context, error, stack) => Container(
-              width: width,
-              height: width,
-              color: back_grey_2,
-              alignment: Alignment.center,
-              child: Icon(Icons.broken_image_outlined, color: color_grey, size: 36),
-            ),
-          ),
+            height: width,
+            color: back_grey_2,
+            alignment: Alignment.center,
+            child: const CircularProgressIndicator(strokeWidth: 2),
+          );
+        },
+        errorBuilder: (context, error, stack) => Container(
+          width: width,
+          height: width,
+          color: back_grey_2,
+          alignment: Alignment.center,
+          child: Icon(Icons.broken_image_outlined, color: color_grey, size: 36),
         ),
-        if (caption.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Text(caption, style: custom(13, FontWeight.w400, font_grey), textAlign: TextAlign.center),
-        ],
-      ],
+      ),
     );
   }
 }
