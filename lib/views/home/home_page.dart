@@ -37,6 +37,7 @@ class _HomePageState extends ConsumerState<HomePage> with RiverpodMixin, TickerP
     WidgetsBinding.instance.addPostFrameCallback((_) {
       layoutController.changeColor(false);
       homeController.initHome();
+      homeController.getProjects();
     });
   }
 
