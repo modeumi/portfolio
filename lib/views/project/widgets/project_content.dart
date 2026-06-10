@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import 'package:portfolio/core/app_setting.dart';
 import 'package:utility/color.dart';
 import 'package:utility/textstyle.dart';
 
@@ -103,8 +104,9 @@ class _FigureGalleryState extends State<_FigureGallery> {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final double w = constraints.maxWidth;
-          final double itemW = (w / 2) - 14; // 화면 절반에서 여백만큼 더 뺌
+          final double w = constraints.maxWidth; // 중앙정렬/스크롤 판단용 가용 폭
+          final double itemW = app_width / 2; // 고정 너비 (창 크기와 무관)
+          final double itemH = app_height / 2; // 동일 비율 고정 높이
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -126,7 +128,7 @@ class _FigureGalleryState extends State<_FigureGallery> {
                         for (final src in widget.images)
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 6),
-                            child: SizedBox(width: itemW, child: _shotImage(src, itemW)),
+                            child: _shotImage(src, itemW, itemH),
                           ),
                       ],
                     ),
@@ -145,19 +147,20 @@ class _FigureGalleryState extends State<_FigureGallery> {
   }
 }
 
-// 사진 1장 (로딩/에러 플레이스홀더 포함)
-Widget _shotImage(String src, double width) {
+// 사진 1장: 고정 width/height 박스 (로딩/에러 플레이스홀더 포함)
+Widget _shotImage(String src, double width, double height) {
   return ClipRRect(
     borderRadius: BorderRadius.circular(12),
     child: Image.network(
       src,
       width: width,
-      fit: BoxFit.fitWidth,
+      height: height,
+      fit: BoxFit.cover,
       loadingBuilder: (context, child, progress) {
         if (progress == null) return child;
         return Container(
           width: width,
-          height: width,
+          height: height,
           color: back_grey_2,
           alignment: Alignment.center,
           child: const CircularProgressIndicator(strokeWidth: 2),
@@ -165,7 +168,7 @@ Widget _shotImage(String src, double width) {
       },
       errorBuilder: (context, error, stack) => Container(
         width: width,
-        height: width,
+        height: height,
         color: back_grey_2,
         alignment: Alignment.center,
         child: Icon(Icons.broken_image_outlined, color: color_grey, size: 36),
