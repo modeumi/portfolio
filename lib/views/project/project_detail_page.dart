@@ -9,8 +9,8 @@ import 'package:portfolio/views/project/widgets/project_icon.dart';
 import 'package:utility/color.dart';
 import 'package:utility/textstyle.dart';
 
-// 프로젝트 게시물(소개) 페이지 - 프로젝트 탭에서 아이템 선택 시 진입
-// 선택된 ProjectModel 의 icon / name / content / background 를 배치한다.
+// 프로젝트 소개 페이지 - 포트폴리오 쇼케이스 느낌으로 꾸민 상세 화면
+// 히어로 헤더(아이콘 + 타이틀 + 배경) 위로 본문 시트가 떠오르는 구성
 class ProjectDetailPage extends ConsumerStatefulWidget {
   const ProjectDetailPage({super.key});
 
@@ -31,81 +31,152 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> with Rive
   Widget build(BuildContext context) {
     final ProjectModel project = manageState.project;
     final String? bg = project.background;
-
-    // 배경: firebase storage 이미지(http) / #hex 색상 / 기본 흰색
     final bool onImage = bg != null && bg.startsWith('http');
-    BoxDecoration decoration;
-    if (onImage) {
-      decoration = BoxDecoration(image: DecorationImage(image: NetworkImage(bg), fit: BoxFit.cover));
-    } else if (bg != null && bg.startsWith('#')) {
-      decoration = BoxDecoration(color: _hexColor(bg) ?? pWhite);
-    } else {
-      decoration = BoxDecoration(color: pWhite);
-    }
-
-    // 이미지 배경 위에서는 헤더 글씨를 흰색 + 그림자로
-    final TextStyle titleStyle = onImage
-        ? custom(34, FontWeight.w800, Colors.white).copyWith(shadows: [Shadow(color: Colors.black54, blurRadius: 8)])
-        : black(34, FontWeight.w800);
-    final Color iconBtnColor = onImage ? Colors.white : color_black;
+    final Color? bgColor = (bg != null && bg.startsWith('#')) ? _hexColor(bg) : null;
+    final bool hasContent = project.content != null && project.content!.isNotEmpty;
 
     return Container(
       width: double.infinity,
-      decoration: decoration,
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 뒤로가기
-            Padding(
-              padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
-              child: GestureDetector(
-                onTap: () => context.pop(),
-                child: Icon(Icons.arrow_back_ios_new, size: 28, color: iconBtnColor),
-              ),
+      decoration: BoxDecoration(color: pWhite),
+      child: Stack(
+        children: [
+          // 이미지 배경(있을 때): 전체를 깔고 가독성용 스크림
+          if (onImage) ...[
+            Positioned.fill(
+              child: Image.network(bg, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const SizedBox.shrink()),
             ),
-
-            // 최상단: 큼직한 아이콘 + 타이틀 (소개 진입 인지)
-            const SizedBox(height: 20),
-            Center(
-              child: Column(
-                children: [
-                  Container(
-                    width: 110,
-                    height: 110,
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: pWhite,
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [BoxShadow(offset: const Offset(0, 6), color: pBackGrey2, blurRadius: 14)],
-                    ),
-                    child: Center(child: projectIcon(project.icon, 74)),
-                  ),
-                  const SizedBox(height: 18),
-                  Text(project.name ?? '', style: titleStyle, textAlign: TextAlign.center),
-                ],
-              ),
-            ),
-
-            // 일정한 여백 후 content 영역
-            const SizedBox(height: 40),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 60),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            Positioned.fill(
+              child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: pWhite,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [BoxShadow(offset: const Offset(0, 3), color: pBackGrey2, blurRadius: 8)],
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.black.withValues(alpha: 0.35), Colors.black.withValues(alpha: 0.12)],
+                  ),
                 ),
-                child: (project.content == null || project.content!.isEmpty)
-                    ? Text('등록된 소개 내용이 없습니다', style: custom(16, FontWeight.w400, font_grey))
-                    : ProjectContent(project.content!),
               ),
             ),
           ],
+
+          // 본문 (부드러운 등장 애니메이션)
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: 1),
+            duration: const Duration(milliseconds: 450),
+            curve: Curves.easeOut,
+            builder: (context, t, child) => Opacity(
+              opacity: t,
+              child: Transform.translate(offset: Offset(0, (1 - t) * 20), child: child),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _hero(project, onImage: onImage, bgColor: bgColor),
+                  // 본문 시트: 히어로 위로 살짝 겹쳐 떠오르는 느낌
+                  Transform.translate(
+                    offset: const Offset(0, -28),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: pWhite,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                        boxShadow: [BoxShadow(offset: const Offset(0, -6), blurRadius: 18, color: Colors.black.withValues(alpha: 0.06))],
+                      ),
+                      padding: const EdgeInsets.fromLTRB(22, 32, 22, 80),
+                      child: hasContent
+                          ? ProjectContent(project.content!)
+                          : Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 50),
+                              child: Center(child: Text('등록된 소개 내용이 없습니다', style: custom(16, FontWeight.w400, font_grey))),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 플로팅 뒤로가기
+          Positioned(
+            top: 14,
+            left: 14,
+            child: GestureDetector(
+              onTap: () => context.pop(),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: pWhite.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(offset: const Offset(0, 2), color: pBackGrey2, blurRadius: 8)],
+                ),
+                child: Icon(Icons.arrow_back_ios_new, size: 19, color: color_black),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 히어로 헤더: 아이콘 + 타이틀 + 액센트 디바이더
+  Widget _hero(ProjectModel project, {required bool onImage, Color? bgColor}) {
+    final TextStyle titleStyle = onImage
+        ? custom(33, FontWeight.w800, Colors.white).copyWith(shadows: [Shadow(color: Colors.black54, blurRadius: 10)])
+        : custom(33, FontWeight.w800, textColor);
+
+    // 헤더 배경: 이미지면 투명(아래 깔린 이미지 사용), 색이면 그 색, 없으면 부드러운 그라데이션
+    BoxDecoration deco;
+    if (onImage) {
+      deco = const BoxDecoration();
+    } else if (bgColor != null) {
+      deco = BoxDecoration(color: bgColor);
+    } else {
+      deco = BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [backSurface, pMainColor.withValues(alpha: 0.35), pWhite],
         ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      decoration: deco,
+      padding: const EdgeInsets.fromLTRB(24, 82, 24, 58),
+      child: Column(
+        children: [
+          // 아이콘 카드 (은은한 컬러 그림자)
+          Container(
+            width: 116,
+            height: 116,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: pWhite,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  offset: const Offset(0, 10),
+                  blurRadius: 24,
+                  color: (onImage ? Colors.black : secondary).withValues(alpha: onImage ? 0.40 : 0.28),
+                ),
+              ],
+            ),
+            child: Center(child: projectIcon(project.icon, 76)),
+          ),
+          const SizedBox(height: 20),
+          Text(project.name ?? '', style: titleStyle, textAlign: TextAlign.center),
+          const SizedBox(height: 14),
+          // 액센트 디바이더
+          Container(
+            width: 46,
+            height: 5,
+            decoration: BoxDecoration(
+              color: onImage ? Colors.white : accent,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+        ],
       ),
     );
   }
