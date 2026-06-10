@@ -32,7 +32,7 @@ class ProjectContent extends StatelessWidget {
         if (images.isEmpty) return null; // 이미지 없으면 기본 렌더링
 
         final caption = element.querySelector('figcaption')?.text.trim() ?? '';
-        return _figureGallery(images, caption);
+        return _FigureGallery(images: images, caption: caption);
       },
       customStylesBuilder: (element) {
         switch (element.localName) {
@@ -75,8 +75,30 @@ class ProjectContent extends StatelessWidget {
     );
   }
 
-  // figure: 사진들을 가로 한 줄(1장 중앙 / 2장 꽉참 / 그 이상 좌우 스크롤) + 아래 캡션 1개
-  Widget _figureGallery(List<String> images, String caption) {
+}
+
+// figure: 사진들을 가로 한 줄(1장 중앙 / 2장 꽉참 / 그 이상 좌우 스크롤) + 아래 캡션 1개
+// 스크롤 가능하면 잡아서 끌 수 있는 스크롤바를 표시한다.
+class _FigureGallery extends StatefulWidget {
+  final List<String> images;
+  final String caption;
+  const _FigureGallery({required this.images, required this.caption});
+
+  @override
+  State<_FigureGallery> createState() => _FigureGalleryState();
+}
+
+class _FigureGalleryState extends State<_FigureGallery> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: LayoutBuilder(
@@ -86,27 +108,34 @@ class ProjectContent extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: ConstrainedBox(
-                  // 사진이 적으면(1~2장) 중앙 정렬, 많으면 그대로 늘어나 스크롤
-                  constraints: BoxConstraints(minWidth: w),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (final src in images)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: SizedBox(width: itemW, child: _image(src, itemW)),
-                        ),
-                    ],
+              Scrollbar(
+                controller: _scrollController,
+                thumbVisibility: true, // 스크롤 가능할 때 항상 표시
+                interactive: true, // 스크롤바를 잡아서 끌 수 있음
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.only(bottom: 14), // 스크롤바 자리
+                  child: ConstrainedBox(
+                    // 사진이 적으면(1~2장) 중앙 정렬, 많으면 그대로 늘어나 스크롤
+                    constraints: BoxConstraints(minWidth: w),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (final src in widget.images)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: SizedBox(width: itemW, child: _shotImage(src, itemW)),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              if (caption.isNotEmpty) ...[
+              if (widget.caption.isNotEmpty) ...[
                 const SizedBox(height: 10),
-                Text(caption, style: custom(14, FontWeight.w500, font_grey), textAlign: TextAlign.center),
+                Text(widget.caption, style: custom(14, FontWeight.w500, font_grey), textAlign: TextAlign.center),
               ],
             ],
           );
@@ -114,33 +143,33 @@ class ProjectContent extends StatelessWidget {
       ),
     );
   }
+}
 
-  // 사진 1장 (로딩/에러 플레이스홀더 포함)
-  Widget _image(String src, double width) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Image.network(
-        src,
-        width: width,
-        fit: BoxFit.fitWidth,
-        loadingBuilder: (context, child, progress) {
-          if (progress == null) return child;
-          return Container(
-            width: width,
-            height: width,
-            color: back_grey_2,
-            alignment: Alignment.center,
-            child: const CircularProgressIndicator(strokeWidth: 2),
-          );
-        },
-        errorBuilder: (context, error, stack) => Container(
+// 사진 1장 (로딩/에러 플레이스홀더 포함)
+Widget _shotImage(String src, double width) {
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(12),
+    child: Image.network(
+      src,
+      width: width,
+      fit: BoxFit.fitWidth,
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return Container(
           width: width,
           height: width,
           color: back_grey_2,
           alignment: Alignment.center,
-          child: Icon(Icons.broken_image_outlined, color: color_grey, size: 36),
-        ),
+          child: const CircularProgressIndicator(strokeWidth: 2),
+        );
+      },
+      errorBuilder: (context, error, stack) => Container(
+        width: width,
+        height: width,
+        color: back_grey_2,
+        alignment: Alignment.center,
+        child: Icon(Icons.broken_image_outlined, color: color_grey, size: 36),
       ),
-    );
-  }
+    ),
+  );
 }
