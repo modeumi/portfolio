@@ -69,55 +69,63 @@ class _HomeNoteState extends ConsumerState<HomeNote> with RiverpodMixin {
                       children: [
                         for (var i in noteState.noteList.take(3))
                           Expanded(
-                            child: InkWell(
-                              onTap: () {
-                                layoutController.changeColor(true);
-                                noteController.setNote(i);
-                                noteController.runAutosave();
-                                context.push('/note_write');
-                              },
-                              child: Row(
-                                spacing: 10,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 30,
-                                    height: 30,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(width: 1, color: color_grey),
-                                    ),
-                                    child: ClipOval(child: Text(i.content ?? '', style: black(10, FontWeight.w400))),
-                                  ),
-                                  Expanded(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border: Border(bottom: BorderSide(width: 1, color: pBackGrey2)),
+                            child: Builder(
+                              builder: (context) {
+                                DateTime noteCreate = DateTime.parse(i.createAt ?? '1999-12-31');
+                                DateTime noteUpdate = DateTime.parse(i.updateAt ?? '1999-12-31');
+                                String noteTitle = i.title ?? '';
+                                if (noteTitle == '') {
+                                  noteTitle = '노트 ${noteCreate.month.toString().padLeft(2, '0')}${noteCreate.day.toString().padLeft(2, '0')}';
+                                }
+                                final String initial = noteTitle.trim().isNotEmpty ? noteTitle.trim().substring(0, 1) : '노';
+                                return InkWell(
+                                  onTap: () {
+                                    layoutController.changeColor(true);
+                                    noteController.setNote(i);
+                                    noteController.runAutosave();
+                                    context.push('/note_write');
+                                  },
+                                  child: Row(
+                                    spacing: 10,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      // 아이템 아이콘 : 제목 이니셜 아바타
+                                      Container(
+                                        width: 36,
+                                        height: 36,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(11),
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [primary, secondary],
+                                          ),
+                                          boxShadow: [BoxShadow(offset: const Offset(0, 2), blurRadius: 5, color: secondary.withValues(alpha: 0.25))],
+                                        ),
+                                        child: Text(initial, style: white(16, FontWeight.w800)),
                                       ),
-                                      child: Builder(
-                                        builder: (context) {
-                                          String noteTitle = i.title ?? '';
-                                          DateTime noteCreate = DateTime.parse(i.createAt ?? '1999-12-31');
-                                          DateTime noteUpdate = DateTime.parse(i.updateAt ?? '1999-12-31');
-                                          if (noteTitle == '') {
-                                            noteTitle =
-                                                '노트 ${noteCreate.month.toString().padLeft(2, '0')}${noteCreate.day.toString().padLeft(2, '0')}';
-                                          }
-                                          return Column(
+                                      Expanded(
+                                        child: Container(
+                                          padding: const EdgeInsets.only(bottom: 6),
+                                          decoration: BoxDecoration(
+                                            border: Border(bottom: BorderSide(width: 1, color: pBackGrey2)),
+                                          ),
+                                          child: Column(
                                             spacing: 3,
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text(noteTitle, style: black(15, FontWeight.w700)),
-                                              Text('최근 수정일 : ${date_to_string_yyyyMMdd('-', noteUpdate)}'),
+                                              Text(noteTitle, style: black(15, FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                              Text('최근 수정일 : ${date_to_string_yyyyMMdd('-', noteUpdate)}', style: custom(12, FontWeight.w400, font_grey)),
                                             ],
-                                          );
-                                        },
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                );
+                              },
                             ),
                           ),
                       ],
