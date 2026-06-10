@@ -113,31 +113,19 @@ class _ProjectWritePageState extends ConsumerState<ProjectWritePage> with Riverp
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(color: pWhite),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 상단: 뒤로가기 + 추가/저장
+      child: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+            // 상단: 뒤로가기
             Padding(
               padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: saving ? null : () => context.pop(),
-                    child: Icon(Icons.arrow_back_ios_new, size: 28, color: color_black),
-                  ),
-                  GestureDetector(
-                    onTap: save,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                      decoration: BoxDecoration(color: secondary, borderRadius: BorderRadius.circular(20)),
-                      child: saving
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : Text(isNew ? '추가' : '저장', style: white(18, FontWeight.w700)),
-                    ),
-                  ),
-                ],
+              child: GestureDetector(
+                onTap: saving ? null : () => context.pop(),
+                child: Icon(Icons.arrow_back_ios_new, size: 28, color: color_black),
               ),
             ),
 
@@ -199,34 +187,9 @@ class _ProjectWritePageState extends ConsumerState<ProjectWritePage> with Riverp
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'HTML 작성 · <h2> <h3> <p> <b> <ul><li> <img src> 등',
-                            style: custom(13, FontWeight.w400, font_grey),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        // 이미지 추가 버튼 (커서 위치에 이미지 토큰 삽입)
-                        GestureDetector(
-                          onTap: saving ? null : addContentImage,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                            decoration: BoxDecoration(color: back_grey_2, borderRadius: BorderRadius.circular(16)),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              spacing: 5,
-                              children: [
-                                Icon(Icons.image_outlined, size: 18, color: secondary),
-                                Text('이미지 추가', style: custom(14, FontWeight.w600, secondary)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      'HTML 작성 · <h2> <h3> <p> <b> <ul><li> <img src> 등',
+                      style: custom(13, FontWeight.w400, font_grey),
                     ),
                     const SizedBox(height: 12),
                     CustomTextField(
@@ -244,8 +207,12 @@ class _ProjectWritePageState extends ConsumerState<ProjectWritePage> with Riverp
                 ),
               ),
             ),
-          ],
-        ),
+                ],
+              ),
+            ),
+          ),
+          _bottomBar(isNew),
+        ],
       ),
     );
   }
@@ -268,6 +235,55 @@ class _ProjectWritePageState extends ConsumerState<ProjectWritePage> with Riverp
         const SizedBox(height: 6),
         Text('아이콘', style: custom(13, FontWeight.w500, font_grey)),
       ],
+    );
+  }
+
+  // 하단 편의 메뉴바 (이미지 추가 + 저장, 이후 도구 버튼은 왼쪽에 계속 추가 가능)
+  Widget _bottomBar(bool isNew) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+      decoration: BoxDecoration(
+        color: pWhite,
+        border: Border(top: BorderSide(color: back_grey_2, width: 1.5)),
+        boxShadow: [BoxShadow(offset: const Offset(0, -2), color: pBackGrey2, blurRadius: 8)],
+      ),
+      child: Row(
+        children: [
+          // 왼쪽: 작성 도구 (이후 버튼은 여기에 추가)
+          _toolButton(icon: Icons.image_outlined, label: '이미지 추가', onTap: addContentImage),
+          const Spacer(),
+          // 오른쪽: 저장/추가
+          GestureDetector(
+            onTap: save,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
+              decoration: BoxDecoration(color: secondary, borderRadius: BorderRadius.circular(20)),
+              child: saving
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : Text(isNew ? '추가' : '저장', style: white(16, FontWeight.w700)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 메뉴바 도구 버튼
+  Widget _toolButton({required IconData icon, required String label, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: saving ? null : onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        decoration: BoxDecoration(color: back_grey_2, borderRadius: BorderRadius.circular(16)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 6,
+          children: [
+            Icon(icon, size: 19, color: secondary),
+            Text(label, style: custom(14, FontWeight.w600, secondary)),
+          ],
+        ),
+      ),
     );
   }
 }
