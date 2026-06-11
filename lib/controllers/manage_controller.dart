@@ -87,7 +87,7 @@ class ManageController extends StateNotifier<ManageState> {
     final List<ProjectModel> list = [...state.projectList];
     ProjectModel p = state.project;
     if (p.id == null || p.id!.isEmpty) {
-      p = p.copyWith(id: DateTime.now().millisecondsSinceEpoch.toString());
+      p = p.copyWith(id: '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(100000)}');
       list.add(p);
     } else {
       final idx = list.indexWhere((e) => e.id == p.id);

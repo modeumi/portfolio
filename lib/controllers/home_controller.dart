@@ -194,7 +194,7 @@ class HomeController extends StateNotifier<HomeState> {
     } else if (state.folderData.containsKey(path)) {
       return Container(
         padding: EdgeInsets.all(8),
-        decoration: BoxDecoration(color: pWhite.withOpacity(0.5)),
+        decoration: BoxDecoration(color: pWhite.withValues(alpha: 0.5)),
         child: GridView(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 3, mainAxisSpacing: 3),
           children: [
