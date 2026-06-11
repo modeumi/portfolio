@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/models/profile_model.dart';
+import 'package:portfolio/views/profile/widgets/profile_photo_header.dart';
 import 'package:portfolio/views/project/widgets/project_content.dart';
 import 'package:utility/color.dart';
 import 'package:utility/textstyle.dart';
@@ -44,8 +45,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with RiverpodMixin {
           : !hasContent
           ? Center(child: Text('등록된 프로필이 없습니다', style: custom(16, FontWeight.w400, font_grey)))
           : SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(22, 24, 22, 60),
-              child: ProjectContent(profile!.content!),
+              child: Column(
+                children: [
+                  const ProfilePhotoHeader(),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(22, 10, 22, 60),
+                    child: ProjectContent(profile!.content!),
+                  ),
+                ],
+              ),
             ),
     );
   }

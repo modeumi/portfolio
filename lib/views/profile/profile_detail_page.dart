@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
+import 'package:portfolio/views/profile/widgets/profile_photo_header.dart';
 import 'package:portfolio/views/project/widgets/project_content.dart';
 import 'package:utility/color.dart';
 import 'package:utility/textstyle.dart';
@@ -30,17 +31,22 @@ class _ProfileDetailPageState extends ConsumerState<ProfileDetailPage> with Rive
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
-              child: GestureDetector(
-                onTap: () => context.pop(),
-                child: Icon(Icons.arrow_back_ios_new, size: 28, color: color_black),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => context.pop(),
+                    child: Icon(Icons.arrow_back_ios_new, size: 28, color: color_black),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(profile.name ?? '이름 없음', style: black(18, FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ),
+                ],
               ),
             ),
+            const ProfilePhotoHeader(),
             Padding(
-              padding: const EdgeInsets.fromLTRB(22, 16, 22, 8),
-              child: Text(profile.name ?? '이름 없음', style: black(24, FontWeight.w800)),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(22, 0, 22, 60),
+              padding: const EdgeInsets.fromLTRB(22, 10, 22, 60),
               child: hasContent
                   ? ProjectContent(profile.content!)
                   : Padding(
