@@ -7,6 +7,7 @@ import 'package:portfolio/controllers/login_controller.dart';
 import 'package:portfolio/controllers/manage_controller.dart';
 import 'package:portfolio/controllers/message_controller.dart';
 import 'package:portfolio/controllers/note_controller.dart';
+import 'package:portfolio/controllers/profile_controller.dart';
 
 mixin RiverpodMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   HomeController get homeController => ref.read(homeControllerProvider.notifier);
@@ -32,4 +33,7 @@ mixin RiverpodMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
 
   NoteController get noteController => ref.read(noteControllerProvider.notifier);
   NoteState get noteState => ref.watch(noteControllerProvider);
+
+  ProfileController get profileController => ref.read(profileControllerProvider.notifier);
+  ProfileState get profileState => ref.watch(profileControllerProvider);
 }

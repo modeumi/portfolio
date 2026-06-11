@@ -6,6 +6,7 @@ import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/controllers/login_controller.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/views/manage/widgets/project_item.dart';
+import 'package:portfolio/views/profile/widgets/profile_item.dart';
 import 'package:utility/color.dart';
 import 'package:utility/modal_widget.dart';
 import 'package:utility/textstyle.dart';
@@ -49,6 +50,7 @@ class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin, Tic
           permission = true;
         });
         manageController.getProjects();
+        profileController.getProfiles();
       }
     });
   }
@@ -183,6 +185,77 @@ class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin, Tic
   }
 
   Widget _profileTab() {
-    return Center(child: Text('프로필', style: custom(18, FontWeight.w400, font_grey)));
+    final profiles = profileState.profileList;
+    final int checkedCount = profileState.checked.length;
+    return Stack(
+      children: [
+        if (profiles.isEmpty)
+          Center(child: Text('등록된 프로필이 없습니다', style: custom(18, FontWeight.w400, font_grey)))
+        else
+          ListView.separated(
+            padding: EdgeInsets.fromLTRB(20, 20, 20, 90),
+            itemCount: profiles.length,
+            separatorBuilder: (context, index) => SizedBox(height: 15),
+            itemBuilder: (context, index) => ProfileItem(model: profiles[index]),
+          ),
+        // 하단: 프로필 추가 + 복사(체크 시)
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 20,
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 12,
+              children: [
+                if (checkedCount > 0)
+                  GestureDetector(
+                    onTap: () => profileController.copyChecked(),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: pWhite,
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: secondary, width: 1.5),
+                        boxShadow: [BoxShadow(offset: Offset(0, 4), color: pBackGrey2, blurRadius: 10)],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        spacing: 8,
+                        children: [
+                          Icon(Icons.copy_rounded, color: secondary, size: 22),
+                          Text('복사 ($checkedCount)', style: custom(18, FontWeight.w700, secondary)),
+                        ],
+                      ),
+                    ),
+                  ),
+                GestureDetector(
+                  onTap: () {
+                    profileController.newProfile();
+                    context.push('/profile_write');
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: secondary,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [BoxShadow(offset: Offset(0, 4), color: pBackGrey2, blurRadius: 10)],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 8,
+                      children: [
+                        Icon(Icons.add, color: pWhite, size: 24),
+                        Text('프로필 추가', style: white(18, FontWeight.w700)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
