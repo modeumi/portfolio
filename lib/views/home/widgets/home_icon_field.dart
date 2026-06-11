@@ -16,7 +16,7 @@ class HomeIconField extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           for (int i = 0; i < 4; i++)
-            if (iconData.length > i)
+            if (iconData.length > i && iconData.keys.toList()[i] != 'empty')
               if (iconData.keys.toList()[i] == 'calendar')
                 Flexible(flex: 1, child: HomeCalendarIcon(showContent: showContent))
               else

@@ -23,9 +23,9 @@ class HomeState {
 
   final Map<String, dynamic> apps = {
     'bottomMenu': {'note': '노트', 'message': '채팅', 'calendar': '캘린더', 'apps': '앱스'}, // 하단에 띄울 앱, 이름 미출력
-    'mainMenu': {'notion': 'Notion', 'github': 'GitHub', 'blog': '네이버 블로그'}, // 메인화면에 출력할 주요 앱
+    'mainMenu': {'notion': 'Notion', 'github': 'GitHub', 'empty': '', 'folder_1': '프로젝트'}, // 메인: notion, github, 빈칸, 프로젝트 폴더
     'profile': {'profile': '내정보'}, // 내정보 앱
-    'etc': {'kakao': '카카오톡', 'discord': 'Discord', 'folder_1': '프로젝트'}, // 메인에는 출력하지않으나 앱스를 클릭했을때 출력할 앱
+    'etc': {'kakao': '카카오톡', 'discord': 'Discord'}, // 메인에는 출력하지않으나 앱스를 클릭했을때 출력할 앱
   };
 
   // folder_1(프로젝트 폴더) 내용: { projectId: projectName } — manage_controller projectList에서 파생
@@ -111,6 +111,8 @@ class HomeController extends StateNotifier<HomeState> {
       int pageNum = state.pageNumber;
       state = state.copyWith(menuOpen: true, menuOpacity: 1, pageNumber: pageNum);
     } else if (state.folderData.containsKey(title)) {
+      // 폴더 탭 시 메뉴(오버레이)를 열고 해당 폴더를 보여줌 (메인 화면에서 탭해도 열리도록)
+      state = state.copyWith(menuOpen: true, menuOpacity: 1);
       selectFolder(title);
     } else if (state.links.containsKey(title)) {
       final Uri url = Uri.parse(state.links[title]);
@@ -160,6 +162,7 @@ class HomeController extends StateNotifier<HomeState> {
   Map<String, dynamic> getAppsValue(int startIndex, int endIndex) {
     Map<String, dynamic> valuesDict = Map.fromEntries(state.apps.values.expand((m) => m.entries));
     valuesDict.remove('apps');
+    valuesDict.remove('empty');
     List<dynamic> keysSlice = valuesDict.keys.toList().sublist(startIndex, min(valuesDict.length, endIndex));
     Map<String, dynamic> returnData = {for (var key in keysSlice) key: valuesDict[key]};
     return returnData;
