@@ -6,6 +6,7 @@ import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/custom_text_field.dart';
 import 'package:utility/color.dart';
+import 'package:utility/modal_widget.dart';
 import 'package:utility/textstyle.dart';
 import 'package:utility/toast_message.dart';
 
@@ -67,6 +68,27 @@ class _ProfileWritePageState extends ConsumerState<ProfileWritePage> with Riverp
     setState(() {});
   }
 
+  void confirmDelete() {
+    final String? id = profileState.profile.id;
+    if (id == null || id.isEmpty) return;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => ModalWidget(
+        title: '프로필 삭제',
+        content: '이 프로필을 삭제하시겠습니까?',
+        width: 320,
+        action: () async {
+          Navigator.pop(dialogContext);
+          try {
+            await profileController.deleteProfile(id);
+            if (mounted) context.pop();
+          } catch (_) {}
+        },
+        cancle: () {},
+      ),
+    );
+  }
+
   Future<void> save() async {
     if (saving) return;
     setState(() => saving = true);
@@ -104,9 +126,19 @@ class _ProfileWritePageState extends ConsumerState<ProfileWritePage> with Riverp
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
-                    child: GestureDetector(
-                      onTap: saving ? null : () => context.pop(),
-                      child: Icon(Icons.arrow_back_ios_new, size: 28, color: color_black),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: saving ? null : () => context.pop(),
+                          child: Icon(Icons.arrow_back_ios_new, size: 28, color: color_black),
+                        ),
+                        if (!isNew)
+                          GestureDetector(
+                            onTap: saving ? null : confirmDelete,
+                            child: Icon(Icons.delete_outline, size: 28, color: color_red),
+                          ),
+                      ],
                     ),
                   ),
 

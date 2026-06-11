@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:portfolio/models/project_model.dart';
 import 'package:utility/import_package.dart' hide ImageSource;
+import 'package:utility/toast_message.dart';
 
 // 업로드 전 로컬에 들고 있는 선택 이미지 (바이트 + mime)
 class PickedImage {
@@ -32,13 +33,29 @@ class ManageController extends StateNotifier<ManageState> {
 
   // Firestore 'Projects' 컬렉션에서 등록된 프로젝트 목록 가져오기
   Future<void> getProjects() async {
-    final snapshot = await store.collection('Projects').get();
-    final List<ProjectModel> list = snapshot.docs.map((d) {
-      final data = d.data();
-      data['id'] = d.id; // doc id를 모델 id로 사용
-      return ProjectModel.fromMap(data);
-    }).toList();
-    state = state.copyWith(projectList: list);
+    try {
+      final snapshot = await store.collection('Projects').get();
+      final List<ProjectModel> list = snapshot.docs.map((d) {
+        final data = d.data();
+        data['id'] = d.id; // doc id를 모델 id로 사용
+        return ProjectModel.fromMap(data);
+      }).toList();
+      state = state.copyWith(projectList: list);
+    } catch (e) {
+      ToastMessage().ShowToast('프로젝트를 불러오지 못했습니다.');
+    }
+  }
+
+  // 프로젝트 삭제 (Firestore + 메모리)
+  Future<void> deleteProject(String id) async {
+    try {
+      await store.collection('Projects').doc(id).delete();
+      final list = state.projectList.where((p) => p.id != id).toList();
+      state = state.copyWith(projectList: list);
+    } catch (e) {
+      ToastMessage().ShowToast('삭제에 실패했습니다.');
+      rethrow;
+    }
   }
 
   void setProject(ProjectModel model) {

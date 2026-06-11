@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:portfolio/models/profile_model.dart';
 import 'package:utility/import_package.dart';
+import 'package:utility/toast_message.dart';
 
 class ProfileState {
   final List<ProfileModel> profileList;
@@ -32,17 +33,37 @@ class ProfileController extends StateNotifier<ProfileState> {
 
   // 등록된 프로필 목록 + 현재 사용 중 프로필 id 로드
   Future<void> getProfiles() async {
-    final snapshot = await store.collection('Profiles').get();
-    final List<ProfileModel> list = snapshot.docs.map((d) {
-      final data = d.data();
-      data['id'] = d.id;
-      return ProfileModel.fromMap(data);
-    }).toList();
+    try {
+      final snapshot = await store.collection('Profiles').get();
+      final List<ProfileModel> list = snapshot.docs.map((d) {
+        final data = d.data();
+        data['id'] = d.id;
+        return ProfileModel.fromMap(data);
+      }).toList();
 
-    final config = await store.collection('Config').doc('profile').get();
-    final String selectedId = (config.data()?['selectedId'] as String?) ?? '';
+      final config = await store.collection('Config').doc('profile').get();
+      final String selectedId = (config.data()?['selectedId'] as String?) ?? '';
 
-    state = state.copyWith(profileList: list, selectedId: selectedId);
+      state = state.copyWith(profileList: list, selectedId: selectedId);
+    } catch (e) {
+      ToastMessage().ShowToast('프로필을 불러오지 못했습니다.');
+    }
+  }
+
+  // 프로필 삭제 (Firestore + 메모리, 선택 중이면 선택 해제)
+  Future<void> deleteProfile(String id) async {
+    try {
+      await store.collection('Profiles').doc(id).delete();
+      final list = state.profileList.where((p) => p.id != id).toList();
+      final String selectedId = state.selectedId == id ? '' : state.selectedId;
+      if (state.selectedId == id) {
+        await store.collection('Config').doc('profile').set({'selectedId': ''}, SetOptions(merge: true));
+      }
+      state = state.copyWith(profileList: list, selectedId: selectedId);
+    } catch (e) {
+      ToastMessage().ShowToast('삭제에 실패했습니다.');
+      rethrow;
+    }
   }
 
   void setProfile(ProfileModel model) {
@@ -96,33 +117,47 @@ class ProfileController extends StateNotifier<ProfileState> {
 
   // 체크된 프로필 복사 (사본 생성)
   Future<void> copyChecked() async {
-    for (final id in state.checked) {
-      final src = state.profileList.where((p) => p.id == id).toList();
-      if (src.isEmpty) continue;
-      final newId = '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(100000)}';
-      final copy = src.first.copyWith(id: newId, name: '${src.first.name ?? '프로필'} 복사');
-      await store.collection('Profiles').doc(newId).set(copy.toMap(), SetOptions(merge: true));
+    try {
+      for (final id in state.checked) {
+        final src = state.profileList.where((p) => p.id == id).toList();
+        if (src.isEmpty) continue;
+        final newId = '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(100000)}';
+        final copy = src.first.copyWith(id: newId, name: '${src.first.name ?? '프로필'} 복사');
+        await store.collection('Profiles').doc(newId).set(copy.toMap(), SetOptions(merge: true));
+      }
+      state = state.copyWith(checked: {});
+      await getProfiles();
+    } catch (e) {
+      ToastMessage().ShowToast('복사에 실패했습니다.');
     }
-    state = state.copyWith(checked: {});
-    await getProfiles();
   }
 
   // 사용할 프로필 선택 (mobile view 연결 대상)
   Future<void> selectProfile(String id) async {
+    final String prev = state.selectedId;
     state = state.copyWith(selectedId: id);
-    await store.collection('Config').doc('profile').set({'selectedId': id}, SetOptions(merge: true));
+    try {
+      await store.collection('Config').doc('profile').set({'selectedId': id}, SetOptions(merge: true));
+    } catch (e) {
+      state = state.copyWith(selectedId: prev); // 실패 시 롤백
+      ToastMessage().ShowToast('선택 저장에 실패했습니다.');
+    }
   }
 
   // mobile view용: 현재 선택된 프로필 1건 로드
   Future<ProfileModel?> loadSelected() async {
-    final config = await store.collection('Config').doc('profile').get();
-    final String? selectedId = config.data()?['selectedId'] as String?;
-    if (selectedId == null || selectedId.isEmpty) return null;
-    final doc = await store.collection('Profiles').doc(selectedId).get();
-    if (!doc.exists) return null;
-    final data = doc.data()!;
-    data['id'] = doc.id;
-    return ProfileModel.fromMap(data);
+    try {
+      final config = await store.collection('Config').doc('profile').get();
+      final String? selectedId = config.data()?['selectedId'] as String?;
+      if (selectedId == null || selectedId.isEmpty) return null;
+      final doc = await store.collection('Profiles').doc(selectedId).get();
+      if (!doc.exists) return null;
+      final data = doc.data()!;
+      data['id'] = doc.id;
+      return ProfileModel.fromMap(data);
+    } catch (e) {
+      return null;
+    }
   }
 }
 
