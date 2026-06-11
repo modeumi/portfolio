@@ -133,7 +133,7 @@ class _CalendarDaliySchedulePageState extends ConsumerState<CalendarDaliySchedul
                                       child: Container(
                                         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
                                         decoration: BoxDecoration(
-                                          color: Color(i.colorCode!).withOpacity(0.3),
+                                          color: Color(i.colorCode!).withValues(alpha: 0.3),
                                           borderRadius: BorderRadius.circular(13),
                                         ),
                                         child: Column(

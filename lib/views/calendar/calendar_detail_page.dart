@@ -187,7 +187,7 @@ class _CalendarDetailPageState extends ConsumerState<CalendarDetailPage> with Ri
                     await layoutController.withLoading(() async {
                       await calendarController.deleteSchedule();
                     });
-                    context.pop();
+                    if (context.mounted) context.pop();
                   }
                 },
                 child: Container(

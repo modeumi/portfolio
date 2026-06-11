@@ -135,6 +135,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
                 await layoutController.withLoading(() async {
                   await calendarController.loadDailySchedule();
                 });
+                if (!context.mounted) return;
                 if (pageNavigeting) return;
                 pageNavigeting = true;
                 await context.push('/calendar_daily_schedule');

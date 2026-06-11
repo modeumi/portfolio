@@ -68,7 +68,7 @@ class _MessageSearchFieldState extends ConsumerState<MessageSearchField> with Ri
             ),
           );
           if (result == true) {
-            messageController.setSearchTarget(context, widget.model.name!);
+            if (context.mounted) messageController.setSearchTarget(context, widget.model.name!);
           } else {
             return;
           }

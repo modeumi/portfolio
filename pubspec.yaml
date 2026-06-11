@@ -29,6 +29,7 @@ dependencies:
   dotted_border: ^3.1.0
   web: ^1.1.1
   flutter_widget_from_html: ^0.17.0
+  flutter_svg: ^2.0.9
 
 dev_dependencies:
   flutter_test:

@@ -189,9 +189,8 @@ class _CalendarSearchPageState extends ConsumerState<CalendarSearchPage> with Ri
                                             Flexible(flex: 1, child: SizedBox(width: double.infinity)),
                                             Flexible(
                                               flex: 9,
-                                              child: Container(
+                                              child: SizedBox(
                                                 width: double.infinity,
-                                                // padding: EdgeInsets.only(left: 5),
                                                 child: Text(
                                                   model.allDay ?? false
                                                       ? '하루 종일'

@@ -24,7 +24,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     id.clear();
     password.clear();
-    Future.microtask(() => ref.read(loginControllerProvider.notifier).initState(context));
+    Future.microtask(() {
+      if (mounted) ref.read(loginControllerProvider.notifier).initState(context);
+    });
   }
 
   @override

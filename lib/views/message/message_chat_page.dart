@@ -74,7 +74,7 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
                     onTap: () {
                       context.pop();
                     },
-                    child: SvgPicture.asset('images/top_back.svg', color: secondary),
+                    child: SvgPicture.asset('images/top_back.svg', colorFilter: ColorFilter.mode(secondary, BlendMode.srcIn)),
                   ),
                   Expanded(
                     child: Text(messageState.target!.name ?? '대상오류', style: custom(25, FontWeight.w700, secondary), overflow: TextOverflow.ellipsis),
@@ -147,7 +147,7 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
                                           layoutController.changeDialogState(false);
                                           layoutController.withLoading(() async {
                                             await messageController.setLock();
-                                            Navigator.pop(context);
+                                            if (context.mounted) Navigator.pop(context);
                                           });
                                         }
                                       },
@@ -332,6 +332,7 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
                         await layoutController.withLoading(() async {
                           result = await messageController.sendChat(url, password.text, answer, lock);
                         });
+                        if (!context.mounted) return;
                         if (result == 'pass') {
                           content.clear();
                           await layoutController.withLoading(() async {
@@ -395,6 +396,7 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
                         await layoutController.withLoading(() async {
                           result = await messageController.sendChat(content.text, password.text, answer, lock);
                         });
+                        if (!context.mounted) return;
                         if (result == 'pass') {
                           content.clear();
                           await layoutController.withLoading(() async {

@@ -20,7 +20,7 @@ class _LoadingPageState extends ConsumerState<LoadingPage> {
     super.initState();
     Future.microtask(() {
       final controller = ref.read(loadingControllerProvider.notifier);
-      controller.setLoading(context);
+      if (mounted) controller.setLoading(context);
       controller.initLogout();
     });
   }

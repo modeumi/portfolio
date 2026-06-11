@@ -55,7 +55,7 @@ class _MessageTargetPageState extends ConsumerState<MessageTargetPage> with Rive
                     onTap: () {
                       context.pop();
                     },
-                    child: SvgPicture.asset('images/top_back.svg', color: color_black),
+                    child: SvgPicture.asset('images/top_back.svg', colorFilter: ColorFilter.mode(color_black, BlendMode.srcIn)),
                   ),
                   Text('대화 대상 선택', style: black(26, FontWeight.w900)),
                 ],
@@ -165,7 +165,7 @@ class _MessageTargetPageState extends ConsumerState<MessageTargetPage> with Rive
                   }
 
                   if (!adminName) {
-                    messageController.setSearchTarget(context, search.text);
+                    if (context.mounted) messageController.setSearchTarget(context, search.text);
                   }
                 },
                 child: Container(

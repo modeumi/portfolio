@@ -525,6 +525,7 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
                               layoutController.withLoading(() async {
                                 await calendarController.addSchedule(data);
                               });
+                              if (!context.mounted) return;
                               if (calendarState.edit) {
                                 context.pop();
                               }

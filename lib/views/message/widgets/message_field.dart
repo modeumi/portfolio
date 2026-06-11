@@ -40,7 +40,7 @@ class _MessageFieldState extends State<MessageField> {
                         if (loadingProgress == null) {
                           return child;
                         }
-                        return Container(
+                        return SizedBox(
                           width: app_width / 2,
                           height: app_width / 2,
                           child: Center(child: LoadingIndicator(color: pWhite)),
