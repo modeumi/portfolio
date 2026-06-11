@@ -35,7 +35,6 @@ class CustomTextField extends StatefulWidget {
 }
 
 class _CustomTextFieldState extends State<CustomTextField> {
-  String beforeText = '';
   @override
   Widget build(BuildContext context) {
     return TextSelectionTheme(
