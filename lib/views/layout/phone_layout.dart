@@ -10,7 +10,8 @@ import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
 import 'package:utility/loading_indicator.dart';
 import 'package:utility/textstyle.dart';
-import 'dart:html' as html;
+import 'dart:js_interop';
+import 'package:web/web.dart' as web;
 
 class PhoneLayout extends ConsumerStatefulWidget {
   final Widget child;
@@ -39,14 +40,17 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> with RiverpodMixin {
       }
     });
 
-    html.window.onPopState.listen((event) {
-      // 뒤로가기를 눌렀다면 무조건 특정 페이지로 이동
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          context.go('/');
-        }
-      });
-    });
+    // 뒤로가기를 눌렀다면 무조건 특정 페이지로 이동
+    web.window.addEventListener(
+      'popstate',
+      (web.Event event) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            context.go('/');
+          }
+        });
+      }.toJS,
+    );
   }
 
   @override
