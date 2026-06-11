@@ -69,8 +69,8 @@ class LoginController extends StateNotifier<LoginState> {
 
   Future<void> logout(BuildContext context) async {
     final layoutcontroller = ref.read(layoutControllerProvider.notifier);
-    layoutcontroller.setAdmin();
     await auth.signOut();
+    layoutcontroller.setAdmin(); // signOut 이후 평가해야 admin이 false로 갱신됨
     context.go('/login');
   }
 }

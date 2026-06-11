@@ -28,10 +28,7 @@ class HomeState {
     'etc': {'kakao': '카카오톡', 'discord': 'Discord', 'folder_1': '프로젝트'}, // 메인에는 출력하지않으나 앱스를 클릭했을때 출력할 앱
   };
 
-  // Firestore 'Projects'에서 불러온 프로젝트들 (프로젝트 등록 화면과 동일한 형태)
-  final List<ProjectModel> projects;
-
-  // folder_1(프로젝트 폴더) 내용은 projects에서 채운다: { projectId: projectName }
+  // folder_1(프로젝트 폴더) 내용: { projectId: projectName } — manage_controller projectList에서 파생
   final Map<String, dynamic> folderData;
 
   final Map<String, dynamic> links = {
@@ -49,10 +46,8 @@ class HomeState {
     this.menuOpacity = 0.0,
     this.pageNumber = 0,
     this.selectFolder = '',
-    List<ProjectModel>? projects,
     Map<String, dynamic>? folderData,
-  }) : projects = projects ?? const [],
-       folderData = folderData ?? const {'folder_1': <String, dynamic>{}};
+  }) : folderData = folderData ?? const {'folder_1': <String, dynamic>{}};
 
   HomeState copyWith({
     bool? loading,
@@ -61,7 +56,6 @@ class HomeState {
     double? menuOpacity,
     int? pageNumber,
     String? selectFolder,
-    List<ProjectModel>? projects,
     Map<String, dynamic>? folderData,
   }) {
     return HomeState(
@@ -71,7 +65,6 @@ class HomeState {
       pageNumber: pageNumber ?? this.pageNumber,
       initHome: initHome ?? this.initHome,
       selectFolder: selectFolder ?? this.selectFolder,
-      projects: projects ?? this.projects,
       folderData: folderData ?? this.folderData,
     );
   }
@@ -81,7 +74,6 @@ class HomeState {
 class HomeController extends StateNotifier<HomeState> {
   final Ref ref;
   final CarouselSliderController pageController = CarouselSliderController();
-  final store = FirebaseFirestore.instance;
 
   HomeController(this.ref) : super(HomeState());
 
@@ -89,20 +81,16 @@ class HomeController extends StateNotifier<HomeState> {
     state = state.copyWith(initHome: true);
   }
 
-  // Firestore 'Projects'에서 프로젝트를 불러와 folder_1(프로젝트 폴더) 내용으로 채운다
+  // manage_controller(단일 소스)에서 프로젝트를 불러와 folder_1(프로젝트 폴더) 내용으로 파생
   Future<void> getProjects() async {
-    final snapshot = await store.collection('Projects').get();
-    final List<ProjectModel> list = snapshot.docs.map((d) {
-      final data = d.data();
-      data['id'] = d.id; // doc id를 모델 id로 사용
-      return ProjectModel.fromMap(data);
-    }).toList();
+    await ref.read(manageControllerProvider.notifier).getProjects();
+    final list = ref.read(manageControllerProvider).projectList;
     final Map<String, dynamic> folder = {for (final p in list) (p.id ?? ''): (p.name ?? '')};
-    state = state.copyWith(projects: list, folderData: {'folder_1': folder});
+    state = state.copyWith(folderData: {'folder_1': folder});
   }
 
   ProjectModel? findProject(String id) {
-    for (final p in state.projects) {
+    for (final p in ref.read(manageControllerProvider).projectList) {
       if (p.id == id) return p;
     }
     return null;

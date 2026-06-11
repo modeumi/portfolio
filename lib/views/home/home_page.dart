@@ -118,7 +118,7 @@ class _HomePageState extends ConsumerState<HomePage> with RiverpodMixin, TickerP
                                   onTap: () {},
                                   child: Container(
                                     padding: EdgeInsets.all(20),
-                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: color_white.withOpacity(0.5)),
+                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: color_white.withValues(alpha: 0.5)),
                                     child: GridView(
                                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                         crossAxisCount: 4,
