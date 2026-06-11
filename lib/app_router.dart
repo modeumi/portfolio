@@ -49,14 +49,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/calendar',
             builder: (context, state) {
-              final previous = state.extra as String;
+              final previous = state.extra as String? ?? '';
               return CalendarPage(previous: previous);
             },
           ),
           GoRoute(
             path: '/calendar_add_schedule',
             builder: (context, state) {
-              final previous = state.extra as String;
+              // 편집 진입(detail)에서는 extra가 없으므로 null 안전 처리
+              final previous = state.extra as String? ?? '';
               return CalendarAddSchedulePage(previous: previous);
             },
           ),
