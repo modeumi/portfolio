@@ -25,7 +25,7 @@ class LoadingController extends StateNotifier<LoadingState> {
       state = state.copyWith(phoneBoot: true);
     }
     await Future.delayed(const Duration(milliseconds: 200));
-    context.go('/');
+    if (context.mounted) context.go('/');
   }
 
   // 로딩 페이지를 거치지 않고(새로고침 등) phone 화면으로 바로 진입한 경우 부팅 상태로 처리

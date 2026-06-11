@@ -115,7 +115,7 @@ class LayoutController extends StateNotifier<LayoutState> {
     } catch (e) {
       // 실패 시에도 bootLoading false로 바꾸고 로그 출력
       state = state.copyWith(bootLoading: false);
-      print("SVG 로드 실패: $e");
+      debugPrint("SVG 로드 실패: $e");
     }
   }
 
@@ -140,7 +140,7 @@ class LayoutController extends StateNotifier<LayoutState> {
     try {
       await task();
     } catch (e, y) {
-      print("에러 발생: $e \n\n$y");
+      debugPrint("에러 발생: $e \n\n$y");
     } finally {
       state = state.copyWith(actionLoading: false);
     }

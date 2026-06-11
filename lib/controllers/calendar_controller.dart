@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:portfolio/models/schedules_model.dart';
@@ -237,7 +238,7 @@ class CalendarController extends StateNotifier<CalendarState> {
       await loadDailySchedule();
       setCalendarRows();
     } catch (e) {
-      print('에러 : $e');
+      debugPrint('에러 : $e');
     }
   }
 
@@ -316,7 +317,7 @@ class CalendarController extends StateNotifier<CalendarState> {
         }
         state = state.copyWith(holiday: holiday);
       } catch (e) {
-        print('요청실패 $e');
+        debugPrint('요청실패 $e');
       }
     }
   }
@@ -346,7 +347,7 @@ class CalendarController extends StateNotifier<CalendarState> {
           state = state.copyWith(lunarDate: DateTime.parse(lunDate));
         }
       } catch (e) {
-        print('요청실패 : $e');
+        debugPrint('요청실패 : $e');
       }
     }
   }
@@ -401,7 +402,7 @@ class CalendarController extends StateNotifier<CalendarState> {
       }
       state = state.copyWith(searchSchedule: search);
     } catch (e) {
-      print('커밋 에러 $e');
+      debugPrint('커밋 에러 $e');
     }
   }
 

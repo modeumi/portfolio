@@ -127,7 +127,7 @@ class MessageController extends StateNotifier<MessageState> {
       }
       return 'pass';
     } catch (e) {
-      print(e);
+      debugPrint('$e');
       return 'error';
     }
   }
@@ -186,7 +186,7 @@ class MessageController extends StateNotifier<MessageState> {
         state = state.copyWith(chats: chats);
       }
     } catch (e) {
-      print('채팅 로드 에러 : $e');
+      debugPrint('채팅 로드 에러 : $e');
     }
   }
 
@@ -203,7 +203,7 @@ class MessageController extends StateNotifier<MessageState> {
       }
       state = state.copyWith(targets: models);
     } catch (e) {
-      print('요청에러 $e');
+      debugPrint('요청에러 $e');
     }
   }
 
@@ -233,6 +233,7 @@ class MessageController extends StateNotifier<MessageState> {
         return '';
       }
       if (!file.mimeType!.startsWith('image/')) {
+        if (!context.mounted) return '';
         ref.read(layoutControllerProvider.notifier).changeDialogState(true);
         showDialog(
           context: context,
@@ -258,7 +259,7 @@ class MessageController extends StateNotifier<MessageState> {
 
       return upload.ref.getDownloadURL();
     } catch (e) {
-      print('업로드 실패 : $e');
+      debugPrint('업로드 실패 : $e');
       return '';
     }
   }

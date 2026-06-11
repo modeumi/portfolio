@@ -60,7 +60,7 @@ class LoginController extends StateNotifier<LoginState> {
       state = state.copyWith(wrongMessage: '');
       final layoutcontroller = ref.read(layoutControllerProvider.notifier);
       layoutcontroller.setAdmin();
-      context.go('/manage');
+      if (context.mounted) context.go('/manage');
     } catch (e) {
       state = state.copyWith(wrongMessage: '아이디 혹은 비밀번호가 존재하지 않습니다.');
     }
@@ -71,7 +71,7 @@ class LoginController extends StateNotifier<LoginState> {
     final layoutcontroller = ref.read(layoutControllerProvider.notifier);
     await auth.signOut();
     layoutcontroller.setAdmin(); // signOut 이후 평가해야 admin이 false로 갱신됨
-    context.go('/login');
+    if (context.mounted) context.go('/login');
   }
 }
 
