@@ -60,7 +60,7 @@ class ScheduleModel {
   factory ScheduleModel.fromMap(Map<String, dynamic> map) {
     return ScheduleModel(
       id: map['id'] != null ? map['id'] as String : null,
-      date: map['date'] != null ? List<String>.from((map['date'] as List<String>)) : null,
+      date: map['date'] != null ? List<String>.from(map['date'] as List) : null,
       startDate: map['startDate'] != null ? map['startDate'] as String : null,
       endDate: map['endDate'] != null ? map['endDate'] as String : null,
       startTime: map['startTime'] != null ? map['startTime'] as String : null,
