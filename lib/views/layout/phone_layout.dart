@@ -126,7 +126,8 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> with RiverpodMixin {
                                                     width: 50,
                                                     padding: EdgeInsets.symmetric(vertical: 3),
                                                     decoration: BoxDecoration(color: fontColor, borderRadius: BorderRadius.circular(30)),
-                                                    child: Center(child: Text('95', style: custom(16, FontWeight.w600, textColor))),
+                                                    // 배터리 박스 배경(fontColor)과 대비되도록: 검정 박스면 흰 글씨
+                                                    child: Center(child: Text('95', style: custom(16, FontWeight.w600, fontColor == pWhite ? textColor : pWhite))),
                                                   ),
                                                 ],
                                               );
