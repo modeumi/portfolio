@@ -8,6 +8,7 @@ import 'package:portfolio/core/widgets/custom_text_field.dart';
 import 'package:portfolio/views/project/widgets/project_icon.dart';
 import 'package:utility/color.dart';
 import 'package:utility/textstyle.dart';
+import 'package:utility/toast_message.dart';
 
 // 프로젝트 추가/수정 페이지
 // 아이콘·content 이미지는 선택 시 로컬에 보관만 하고, 추가/저장 버튼을 눌렀을 때 storage에 업로드한다.
@@ -100,6 +101,8 @@ class _ProjectWritePageState extends ConsumerState<ProjectWritePage> with Riverp
       manageController.changeProjectField('content', contentText);
       await manageController.saveProject();
       if (mounted) context.pop();
+    } catch (e) {
+      ToastMessage().ShowToast('저장에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       if (mounted) setState(() => saving = false);
     }

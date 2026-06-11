@@ -23,8 +23,9 @@ class MainApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final route = ref.watch(routerProvider);
-    return MaterialApp.router(
-      supportedLocales: const [Locale('ko', 'KR')],
+    return OKToast(
+      child: MaterialApp.router(
+        supportedLocales: const [Locale('ko', 'KR')],
       debugShowCheckedModeBanner: false,
       builder: (context, child) => LayoutBuilder(
         builder: (context, constraints) {
@@ -48,12 +49,13 @@ class MainApp extends ConsumerWidget {
           );
         },
       ),
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      routerConfig: route,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        routerConfig: route,
+      ),
     );
   }
 }

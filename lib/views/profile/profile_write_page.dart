@@ -7,6 +7,7 @@ import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/custom_text_field.dart';
 import 'package:utility/color.dart';
 import 'package:utility/textstyle.dart';
+import 'package:utility/toast_message.dart';
 
 // 프로필 추가/수정 페이지 (이름 + 자기소개 HTML)
 class ProfileWritePage extends ConsumerStatefulWidget {
@@ -80,6 +81,8 @@ class _ProfileWritePageState extends ConsumerState<ProfileWritePage> with Riverp
       profileController.changeProfileField('content', contentText);
       await profileController.saveProfile();
       if (mounted) context.pop();
+    } catch (e) {
+      ToastMessage().ShowToast('저장에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       if (mounted) setState(() => saving = false);
     }
