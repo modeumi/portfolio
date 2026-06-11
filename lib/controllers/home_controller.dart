@@ -21,11 +21,14 @@ class HomeState {
 
   final String selectFolder;
 
+  // 폴더를 앱스 드로어에서 열었는지(true) 메인 화면에서 열었는지(false)
+  final bool folderFromMenu;
+
   final Map<String, dynamic> apps = {
     'bottomMenu': {'note': '노트', 'message': '채팅', 'calendar': '캘린더', 'apps': '앱스'}, // 하단에 띄울 앱, 이름 미출력
     'mainMenu': {'notion': 'Notion', 'github': 'GitHub', 'empty': '', 'folder_1': '프로젝트'}, // 메인: notion, github, 빈칸, 프로젝트 폴더
     'profile': {'profile': '내정보'}, // 내정보 앱
-    'etc': {'kakao': '카카오톡', 'discord': 'Discord'}, // 메인에는 출력하지않으나 앱스를 클릭했을때 출력할 앱
+    'etc': {'kakao': '카카오톡', 'discord': 'Discord', 'blog': '네이버 블로그'}, // 메인에는 출력하지않으나 앱스를 클릭했을때 출력할 앱
   };
 
   // folder_1(프로젝트 폴더) 내용: { projectId: projectName } — manage_controller projectList에서 파생
@@ -46,6 +49,7 @@ class HomeState {
     this.menuOpacity = 0.0,
     this.pageNumber = 0,
     this.selectFolder = '',
+    this.folderFromMenu = false,
     Map<String, dynamic>? folderData,
   }) : folderData = folderData ?? const {'folder_1': <String, dynamic>{}};
 
@@ -56,6 +60,7 @@ class HomeState {
     double? menuOpacity,
     int? pageNumber,
     String? selectFolder,
+    bool? folderFromMenu,
     Map<String, dynamic>? folderData,
   }) {
     return HomeState(
@@ -65,6 +70,7 @@ class HomeState {
       pageNumber: pageNumber ?? this.pageNumber,
       initHome: initHome ?? this.initHome,
       selectFolder: selectFolder ?? this.selectFolder,
+      folderFromMenu: folderFromMenu ?? this.folderFromMenu,
       folderData: folderData ?? this.folderData,
     );
   }
@@ -111,9 +117,9 @@ class HomeController extends StateNotifier<HomeState> {
       int pageNum = state.pageNumber;
       state = state.copyWith(menuOpen: true, menuOpacity: 1, pageNumber: pageNum);
     } else if (state.folderData.containsKey(title)) {
-      // 폴더 탭 시 메뉴(오버레이)를 열고 해당 폴더를 보여줌 (메인 화면에서 탭해도 열리도록)
-      state = state.copyWith(menuOpen: true, menuOpacity: 1);
-      selectFolder(title);
+      // 폴더를 어디서 열었는지 기록(드로어=true / 메인=false) 후, 메뉴 오버레이를 열어 폴더 표시
+      final bool fromMenu = state.menuOpen;
+      state = state.copyWith(menuOpen: true, menuOpacity: 1, folderFromMenu: fromMenu, selectFolder: title);
     } else if (state.links.containsKey(title)) {
       final Uri url = Uri.parse(state.links[title]);
       if (!await launchUrl(
@@ -135,10 +141,19 @@ class HomeController extends StateNotifier<HomeState> {
     }
   }
 
+  // 폴더 닫기: 드로어에서 열었으면 폴더만 닫고, 메인에서 열었으면 메뉴까지 닫아 직전 home으로
+  void closeFolder() {
+    if (state.folderFromMenu) {
+      selectFolder('');
+    } else {
+      state = state.copyWith(menuOpen: false, menuOpacity: 0, selectFolder: '');
+    }
+  }
+
   void tabBack() {
     if (state.menuOpen) {
       if (state.selectFolder != '') {
-        selectFolder('');
+        closeFolder();
       } else {
         state = state.copyWith(menuOpen: false, menuOpacity: 0);
       }

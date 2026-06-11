@@ -92,7 +92,7 @@ class _HomePageState extends ConsumerState<HomePage> with RiverpodMixin, TickerP
                       )
                     : GestureDetector(
                         onTap: () {
-                          homeController.selectFolder('');
+                          homeController.closeFolder();
                         },
                         child: Container(
                           decoration: BoxDecoration(color: Colors.transparent),
@@ -103,7 +103,7 @@ class _HomePageState extends ConsumerState<HomePage> with RiverpodMixin, TickerP
                                 flex: 1,
                                 child: GestureDetector(
                                   onTap: () {
-                                    homeController.selectFolder('');
+                                    homeController.closeFolder();
                                   },
                                   child: Container(
                                     height: double.infinity,
