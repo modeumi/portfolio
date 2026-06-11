@@ -62,24 +62,58 @@ class _MessageTargetPageState extends ConsumerState<MessageTargetPage> with Rive
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 3),
-                decoration: BoxDecoration(color: color_grey, borderRadius: BorderRadius.circular(30)),
-                child: CustomTextField(
-                  controller: search,
-                  hint: '대화를 시작할 닉네임 입력',
-                  maxLine: 1,
-                  hintColor: pBackGrey,
-                  maxLength: 15,
-                  action: () {
-                    messageController.searchTarget(search.text);
-                  },
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                decoration: BoxDecoration(
+                  color: pWhite,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: color_grey, width: 1),
+                  boxShadow: [BoxShadow(offset: const Offset(0, 2), blurRadius: 6, color: pBackGrey2.withValues(alpha: 0.25))],
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.alternate_email, color: secondary, size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: CustomTextField(
+                        controller: search,
+                        hint: '대화를 시작할 닉네임 입력',
+                        maxLine: 1,
+                        hintColor: font_grey,
+                        maxLength: 15,
+                        action: () {
+                          messageController.searchTarget(search.text);
+                          setState(() {});
+                        },
+                      ),
+                    ),
+                    if (search.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          search.clear();
+                          messageController.searchTarget('');
+                          setState(() {});
+                        },
+                        child: Icon(Icons.cancel, color: color_grey, size: 22),
+                      ),
+                  ],
                 ),
               ),
             ),
-            Text('닉네임은 최대 15자이며, 이를 초과할 경우 15자로 자동 조정됩니다.', style: custom(18, FontWeight.w500, accent)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 26.0),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 15, color: font_grey),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text('닉네임은 최대 15자, 초과 시 자동으로 15자로 조정됩니다.', style: custom(13, FontWeight.w400, font_grey)),
+                  ),
+                ],
+              ),
+            ),
             if (search.text != '')
               GestureDetector(
                 onTap: () async {
