@@ -61,7 +61,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
                   onTap: () {
                     layoutController.tabBack(context);
                   },
-                  child: SvgPicture.asset('images/top_back.svg', width: 40),
+                  child: SvgPicture.asset('assets/images/top_back.svg', width: 40),
                 ),
                 Spacer(),
                 InkWell(

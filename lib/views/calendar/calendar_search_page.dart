@@ -67,7 +67,7 @@ class _CalendarSearchPageState extends ConsumerState<CalendarSearchPage> with Ri
                   onTap: () {
                     context.pop();
                   },
-                  child: SvgPicture.asset('images/top_back.svg', width: 50),
+                  child: SvgPicture.asset('assets/images/top_back.svg', width: 50),
                 ),
                 Expanded(
                   child: searched

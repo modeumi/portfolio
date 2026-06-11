@@ -41,7 +41,7 @@ class _CalendarDetailPageState extends ConsumerState<CalendarDetailPage> with Ri
                         onTap: () {
                           context.pop();
                         },
-                        child: SvgPicture.asset('images/top_back.svg', width: 50),
+                        child: SvgPicture.asset('assets/images/top_back.svg', width: 50),
                       ),
                     ],
                   ),

@@ -71,7 +71,7 @@ class _HomePageViewState extends ConsumerState<HomePageView> with RiverpodMixin 
                     homeController.pushPageIcon(i);
                   },
                   child: SvgPicture.asset(
-                    'images/${i == 0 ? 'home' : 'menu'}_icon.svg',
+                    'assets/images/${i == 0 ? 'home' : 'menu'}_icon.svg',
                     colorFilter: homeState.pageNumber == i ? ColorFilter.mode(pWhite, BlendMode.srcIn) : null,
                   ),
                 ),

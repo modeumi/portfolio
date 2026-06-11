@@ -25,7 +25,7 @@ class ProfilePhotoHeader extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: pWhite, width: 4),
             boxShadow: [BoxShadow(offset: const Offset(0, 8), blurRadius: 20, color: secondary.withValues(alpha: 0.25))],
-            image: const DecorationImage(image: AssetImage('images/profile.png'), fit: BoxFit.cover),
+            image: const DecorationImage(image: AssetImage('assets/images/profile.png'), fit: BoxFit.cover),
           ),
         ),
       ),

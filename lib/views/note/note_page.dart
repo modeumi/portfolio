@@ -243,7 +243,7 @@ class _NotePageState extends ConsumerState<NotePage> with RiverpodMixin {
                     boxShadow: [BoxShadow(offset: Offset(0, 5), blurRadius: 5, color: color_grey)],
                     shape: BoxShape.circle,
                   ),
-                  child: Center(child: SvgPicture.asset('images/note/write.svg')),
+                  child: Center(child: SvgPicture.asset('assets/images/note/write.svg')),
                 ),
               ),
             ),

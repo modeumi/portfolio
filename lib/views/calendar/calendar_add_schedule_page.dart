@@ -169,7 +169,7 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
                                       child: Row(
                                         spacing: 15,
                                         children: [
-                                          SvgPicture.asset('images/calendar/clock.svg'),
+                                          SvgPicture.asset('assets/images/calendar/clock.svg'),
                                           Text('하루 종일', style: black(22, FontWeight.w500)),
                                           Spacer(),
                                           Switch(
@@ -474,7 +474,7 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
                               child: Row(
                                 spacing: 20,
                                 children: [
-                                  SvgPicture.asset('images/calendar/note.svg', width: 30),
+                                  SvgPicture.asset('assets/images/calendar/note.svg', width: 30),
                                   Expanded(
                                     child: CustomTextField(
                                       controller: note,

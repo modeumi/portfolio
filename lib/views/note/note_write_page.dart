@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
-import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/utility.dart';
 import 'package:portfolio/core/widgets/custom_text_field.dart';
@@ -129,9 +128,9 @@ class _NoteWritePageState extends ConsumerState<NoteWritePage> with RiverpodMixi
                     },
                     child: key == 'star'
                         ? noteState.note.bookmark ?? false
-                              ? SvgPicture.asset('images/note/star_on.svg')
-                              : SvgPicture.asset('images/note/star_off.svg')
-                        : SvgPicture.asset('images/note/$key.svg'),
+                              ? SvgPicture.asset('assets/images/note/star_on.svg')
+                              : SvgPicture.asset('assets/images/note/star_off.svg')
+                        : SvgPicture.asset('assets/images/note/$key.svg'),
                   ),
               ],
             ),
@@ -227,7 +226,7 @@ class _NoteWritePageState extends ConsumerState<NoteWritePage> with RiverpodMixi
                     onTap: () {
                       context.pop();
                     },
-                    child: SvgPicture.asset('images/top_back.svg', width: 30),
+                    child: SvgPicture.asset('assets/images/top_back.svg', width: 30),
                   ),
                   Expanded(
                     child: isSearch
@@ -266,7 +265,7 @@ class _NoteWritePageState extends ConsumerState<NoteWritePage> with RiverpodMixi
                     child: Container(
                       padding: EdgeInsets.all(5),
                       decoration: BoxDecoration(shape: BoxShape.circle, color: readOnly ? back_grey_2 : pWhite),
-                      child: SvgPicture.asset('images/note/readOnly.svg'),
+                      child: SvgPicture.asset('assets/images/note/readOnly.svg'),
                     ),
                   ),
                   DropdownButtonHideUnderline(
@@ -274,7 +273,7 @@ class _NoteWritePageState extends ConsumerState<NoteWritePage> with RiverpodMixi
                       isExpanded: false,
                       items: dropdownItems(),
                       onChanged: (value) {},
-                      customButton: SvgPicture.asset('images/menu_dot.svg'),
+                      customButton: SvgPicture.asset('assets/images/menu_dot.svg'),
                       menuItemStyleData: MenuItemStyleData(overlayColor: WidgetStateProperty.all(Colors.transparent)),
                       buttonStyleData: ButtonStyleData(overlayColor: WidgetStateProperty.all(Colors.transparent)),
                       dropdownStyleData: DropdownStyleData(

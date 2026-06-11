@@ -175,7 +175,7 @@ class HomeController extends StateNotifier<HomeState> {
         child: Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            image: DecorationImage(image: AssetImage('images/$path.png'), fit: BoxFit.cover),
+            image: DecorationImage(image: AssetImage('assets/images/$path.png'), fit: BoxFit.cover),
           ),
         ),
       );
@@ -198,7 +198,7 @@ class HomeController extends StateNotifier<HomeState> {
       // 프로젝트 아이콘(네트워크) 또는 기존 asset
       final project = findProject(path);
       if (project != null) return projectIconFill(project.icon);
-      return SvgPicture.asset('images/$path.svg');
+      return SvgPicture.asset('assets/images/$path.svg');
     }
   }
 

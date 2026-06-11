@@ -250,7 +250,7 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> with RiverpodMixin {
                                                 width: 30,
                                                 height: 30,
                                                 child: SvgPicture.asset(
-                                                  'images/$i.svg',
+                                                  'assets/images/$i.svg',
                                                   colorFilter: ColorFilter.mode(
                                                     home
                                                         ? pWhite

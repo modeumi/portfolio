@@ -44,7 +44,7 @@ class _HomeNoteState extends ConsumerState<HomeNote> with RiverpodMixin {
                 SizedBox(
                   width: 30,
                   height: 30,
-                  child: ClipRRect(borderRadius: BorderRadiusGeometry.circular(10), child: SvgPicture.asset('images/note.svg')),
+                  child: ClipRRect(borderRadius: BorderRadiusGeometry.circular(10), child: SvgPicture.asset('assets/images/note.svg')),
                 ),
                 Text('노트', style: black(18, FontWeight.w600)),
                 Spacer(),
@@ -95,15 +95,11 @@ class _HomeNoteState extends ConsumerState<HomeNote> with RiverpodMixin {
                                         height: 36,
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(11),
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [primary, secondary],
-                                          ),
-                                          boxShadow: [BoxShadow(offset: const Offset(0, 2), blurRadius: 5, color: secondary.withValues(alpha: 0.25))],
+                                          shape: BoxShape.circle,
+                                          border: Border.all(width: 1, color: pBackGrey2),
+                                          // boxShadow: [BoxShadow(offset: const Offset(0, 2), blurRadius: 5, color: secondary.withValues(alpha: 0.25))],
                                         ),
-                                        child: Text(initial, style: white(16, FontWeight.w800)),
+                                        child: Text(initial, style: black(16, FontWeight.w800)),
                                       ),
                                       Expanded(
                                         child: Container(
@@ -117,7 +113,10 @@ class _HomeNoteState extends ConsumerState<HomeNote> with RiverpodMixin {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(noteTitle, style: black(15, FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                              Text('최근 수정일 : ${date_to_string_yyyyMMdd('-', noteUpdate)}', style: custom(12, FontWeight.w400, font_grey)),
+                                              Text(
+                                                '최근 수정일 : ${date_to_string_yyyyMMdd('-', noteUpdate)}',
+                                                style: custom(12, FontWeight.w400, font_grey),
+                                              ),
                                             ],
                                           ),
                                         ),

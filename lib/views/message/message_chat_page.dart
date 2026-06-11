@@ -74,7 +74,7 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
                     onTap: () {
                       context.pop();
                     },
-                    child: SvgPicture.asset('images/top_back.svg', colorFilter: ColorFilter.mode(secondary, BlendMode.srcIn)),
+                    child: SvgPicture.asset('assets/images/top_back.svg', colorFilter: ColorFilter.mode(secondary, BlendMode.srcIn)),
                   ),
                   Expanded(
                     child: Text(messageState.target!.name ?? '대상오류', style: custom(25, FontWeight.w700, secondary), overflow: TextOverflow.ellipsis),
@@ -371,7 +371,7 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
                         }
                       }
                     },
-                    child: SvgPicture.asset('images/image.svg', width: 40),
+                    child: SvgPicture.asset('assets/images/image.svg', width: 40),
                   ),
                   Expanded(
                     child: Container(
@@ -435,7 +435,7 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
                         }
                       }
                     },
-                    child: SvgPicture.asset('images/message/send.svg', width: 40),
+                    child: SvgPicture.asset('assets/images/message/send.svg', width: 40),
                   ),
                 ],
               ),
