@@ -54,6 +54,9 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/note/
+    - assets/images/calendar/
+    - assets/images/message/
     - cryption.env
 
   fonts:
