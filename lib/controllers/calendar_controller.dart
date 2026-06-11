@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import 'package:lunar/lunar.dart' show Solar;
 import 'package:portfolio/models/schedules_model.dart';
 import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
@@ -322,34 +323,14 @@ class CalendarController extends StateNotifier<CalendarState> {
     }
   }
 
+  // 음력 변환: 외부 API(HTTP·CORS로 web에서 차단됨) 대신 로컬 라이브러리로 계산
   Future<void> getSolarDate() async {
-    String serviceKey = dotenv.env['ServiceKey'] ?? '';
-    if (serviceKey != '') {
-      final uri = Uri(
-        scheme: 'http',
-        host: 'apis.data.go.kr',
-        path: '/B090041/openapi/service/LrsrCldInfoService/getLunCalInfo',
-        queryParameters: {
-          'solYear': state.targetDate.year.toString(),
-          'solMonth': state.targetDate.month.toString().padLeft(2, '0'),
-          'solDay': state.targetDate.day.toString().padLeft(2, '0'),
-          'serviceKey': serviceKey,
-          '_type': 'json',
-        },
-      );
-      try {
-        final response = await get(uri);
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final body = data['response']['body'];
-          final item = body['items']['item'];
-          String lunDate = '${item['lunYear']}-${item['lunMonth']}-${item['lunDay']}';
-          state = state.copyWith(lunarDate: DateTime.parse(lunDate));
-        }
-      } catch (e) {
-        debugPrint('요청실패 : $e');
-      }
-    }
+    final t = state.targetDate;
+    final lunar = Solar.fromYmd(t.year, t.month, t.day).getLunar();
+    final int lunYear = lunar.getYear();
+    final int lunMonth = lunar.getMonth().abs(); // 윤달은 음수로 오므로 절댓값
+    final int lunDay = lunar.getDay();
+    state = state.copyWith(lunarDate: DateTime(lunYear, lunMonth, lunDay));
   }
 
   Future<void> loadDailySchedule() async {

@@ -30,6 +30,7 @@ dependencies:
   web: ^1.1.1
   flutter_widget_from_html: ^0.17.0
   flutter_svg: ^2.0.9
+  lunar: ^1.7.8
 
 dev_dependencies:
   flutter_test:
