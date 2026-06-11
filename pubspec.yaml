@@ -35,6 +35,15 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+
+# 웹 favicon / PWA 아이콘 생성 설정 (source: assets/images/icon.png)
+flutter_launcher_icons:
+  web:
+    generate: true
+    image_path: "assets/images/icon.png"
+    background_color: "#ffffff"
+    theme_color: "#4A90A4"
 
 # Wasm 호환: flutter_secure_storage_web 2.x(package:web)를 끌어오기 위해 10.x로 상향
 dependency_overrides:
