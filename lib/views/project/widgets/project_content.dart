@@ -106,7 +106,6 @@ class _FigureGalleryState extends State<_FigureGallery> {
         builder: (context, constraints) {
           final double w = constraints.maxWidth; // 중앙정렬/스크롤 판단용 가용 폭
           final double itemW = app_width / 2; // 고정 너비 (창 크기와 무관)
-          final double itemH = app_height / 2; // 동일 비율 고정 높이
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -128,7 +127,7 @@ class _FigureGalleryState extends State<_FigureGallery> {
                         for (final src in widget.images)
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 6),
-                            child: _shotImage(src, itemW, itemH),
+                            child: _shotImage(src, itemW),
                           ),
                       ],
                     ),
@@ -147,20 +146,19 @@ class _FigureGalleryState extends State<_FigureGallery> {
   }
 }
 
-// 사진 1장: 고정 width/height 박스 (로딩/에러 플레이스홀더 포함)
-Widget _shotImage(String src, double width, double height) {
+// 사진 1장: 고정 width + fitWidth (좌우 잘림 없이 높이는 원본 비율대로)
+Widget _shotImage(String src, double width) {
   return ClipRRect(
     borderRadius: BorderRadius.circular(12),
     child: Image.network(
       src,
       width: width,
-      height: height,
-      fit: BoxFit.cover,
+      fit: BoxFit.fitWidth,
       loadingBuilder: (context, child, progress) {
         if (progress == null) return child;
         return Container(
           width: width,
-          height: height,
+          height: width,
           color: back_grey_2,
           alignment: Alignment.center,
           child: const CircularProgressIndicator(strokeWidth: 2),
@@ -168,7 +166,7 @@ Widget _shotImage(String src, double width, double height) {
       },
       errorBuilder: (context, error, stack) => Container(
         width: width,
-        height: height,
+        height: width,
         color: back_grey_2,
         alignment: Alignment.center,
         child: Icon(Icons.broken_image_outlined, color: color_grey, size: 36),
