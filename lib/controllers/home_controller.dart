@@ -174,7 +174,7 @@ class HomeController extends StateNotifier<HomeState> {
 
   void pushPageIcon(int index) {
     try {
-      pageController.animateToPage(index);
+      pageController.animateToPage(index, duration: const Duration(milliseconds: 350), curve: Curves.easeOutCubic);
     } catch (_) {
       // 캐러셀이 아직 마운트되지 않은 경우(메뉴 열림/다른 라우트)는 무시
     }

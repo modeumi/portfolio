@@ -2,6 +2,7 @@ import 'package:blur/blur.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:portfolio/controllers/home_controller.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
@@ -86,7 +87,9 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> with RiverpodMixin {
                         borderRadius: BorderRadiusGeometry.circular(25),
                         child: Stack(
                           children: [
-                            if (homeState.initHome) Positioned.fill(child: Image.asset('assets/images/back.jpg', fit: BoxFit.fill)),
+                            // initHome만 구독 (페이지 전환 등 다른 homeState 변경으로 폰 프레임 전체가 리빌드되지 않도록)
+                            if (ref.watch(homeControllerProvider.select((s) => s.initHome)))
+                              Positioned.fill(child: Image.asset('assets/images/back.jpg', fit: BoxFit.fill)),
                             // 메인 위젯
                             widget.child,
                             // 오픈되지않은 스테이터스 바
