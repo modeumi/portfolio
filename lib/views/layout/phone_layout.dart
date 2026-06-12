@@ -242,7 +242,11 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> with RiverpodMixin {
                                             IconButton(
                                               onPressed: () {
                                                 if (i == 'home') {
+                                                  // 메뉴/폴더 닫고 홈 메인 화면으로 이동
                                                   layoutController.tapHome();
+                                                  homeController.goMain();
+                                                  layoutController.changeColor(false);
+                                                  context.go('/');
                                                 } else if (i == 'back') {
                                                   layoutController.tabBack(context);
                                                 }

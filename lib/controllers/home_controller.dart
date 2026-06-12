@@ -26,9 +26,9 @@ class HomeState {
 
   final Map<String, dynamic> apps = {
     'bottomMenu': {'note': '노트', 'message': '채팅', 'calendar': '캘린더', 'apps': '앱스'}, // 하단에 띄울 앱, 이름 미출력
-    'mainMenu': {'notion': 'Notion', 'github': 'GitHub', 'empty': '', 'folder_1': '프로젝트'}, // 메인: notion, github, 빈칸, 프로젝트 폴더
+    'mainMenu': {'folder_1': '프로젝트', 'empty': '', 'notion': 'Notion', 'github': 'GitHub'}, // 메인: notion, github, 빈칸, 프로젝트 폴더
     'profile': {'profile': '내정보'}, // 내정보 앱
-    'etc': {'kakao': '카카오톡', 'discord': 'Discord', 'blog': '네이버 블로그'}, // 메인에는 출력하지않으나 앱스를 클릭했을때 출력할 앱
+    'etc': {'blog': '네이버 블로그', 'kakao': '카카오톡', 'discord': 'Discord'}, // 메인에는 출력하지않으나 앱스를 클릭했을때 출력할 앱
   };
 
   // folder_1(프로젝트 폴더) 내용: { projectId: projectName } — manage_controller projectList에서 파생
@@ -105,7 +105,10 @@ class HomeController extends StateNotifier<HomeState> {
   // 프로젝트 아이콘(네트워크 URL / asset)을 영역에 꽉 차게 렌더
   Widget projectIconFill(String? icon) {
     if (icon == null || icon.isEmpty) {
-      return Container(color: pWhite, child: Icon(Icons.folder_rounded, color: pBackGrey2));
+      return Container(
+        color: pWhite,
+        child: Icon(Icons.folder_rounded, color: pBackGrey2),
+      );
     }
     if (icon.startsWith('http')) return Image.network(icon, fit: BoxFit.cover);
     if (icon.endsWith('.svg')) return SvgPicture.asset(icon, fit: BoxFit.cover);
@@ -139,6 +142,11 @@ class HomeController extends StateNotifier<HomeState> {
         context.push('/$title');
       }
     }
+  }
+
+  // 홈 버튼: 앱스 메뉴/폴더를 닫고 메인 화면 상태로 복귀
+  void goMain() {
+    state = state.copyWith(menuOpen: false, menuOpacity: 0, selectFolder: '');
   }
 
   // 폴더 닫기: 드로어에서 열었으면 폴더만 닫고, 메인에서 열었으면 메뉴까지 닫아 직전 home으로
