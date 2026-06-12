@@ -6,6 +6,7 @@ import 'package:portfolio/controllers/home_controller.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
+import 'package:portfolio/views/home/widgets/recent_apps_overlay.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
@@ -257,6 +258,9 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> with RiverpodMixin {
                                                   });
                                                 } else if (i == 'back') {
                                                   layoutController.tabBack(context);
+                                                } else if (i == 'menu') {
+                                                  // 최근 연 앱 모아보기 열기
+                                                  homeController.openRecent();
                                                 }
                                               },
                                               icon: SizedBox(
@@ -282,6 +286,8 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> with RiverpodMixin {
                                   ),
                                 ),
                               ),
+                            // 최근 연 앱 모아보기 오버레이
+                            const RecentAppsOverlay(),
                             if (layoutState.actionLoading) Center(child: LoadingAnimationWidget.threeArchedCircle(color: secondary, size: 40)),
                             if (!layoutState.power)
                               GestureDetector(

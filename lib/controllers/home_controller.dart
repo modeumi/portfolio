@@ -24,6 +24,10 @@ class HomeState {
   // 폴더를 앱스 드로어에서 열었는지(true) 메인 화면에서 열었는지(false)
   final bool folderFromMenu;
 
+  // 최근 연 앱 키 목록(최신 우선) / 최근앱 오버레이 열림 여부
+  final List<String> recentApps;
+  final bool recentOpen;
+
   final Map<String, dynamic> apps = {
     'bottomMenu': {'note': '노트', 'message': '채팅', 'calendar': '캘린더', 'apps': '앱스'}, // 하단에 띄울 앱, 이름 미출력
     'mainMenu': {'folder_1': '프로젝트', 'empty': '', 'notion': 'Notion', 'github': 'GitHub'}, // 메인: notion, github, 빈칸, 프로젝트 폴더
@@ -50,8 +54,11 @@ class HomeState {
     this.pageNumber = 0,
     this.selectFolder = '',
     this.folderFromMenu = false,
+    this.recentOpen = false,
+    List<String>? recentApps,
     Map<String, dynamic>? folderData,
-  }) : folderData = folderData ?? const {'folder_1': <String, dynamic>{}};
+  }) : recentApps = recentApps ?? const [],
+       folderData = folderData ?? const {'folder_1': <String, dynamic>{}};
 
   HomeState copyWith({
     bool? loading,
@@ -61,6 +68,8 @@ class HomeState {
     int? pageNumber,
     String? selectFolder,
     bool? folderFromMenu,
+    bool? recentOpen,
+    List<String>? recentApps,
     Map<String, dynamic>? folderData,
   }) {
     return HomeState(
@@ -71,6 +80,8 @@ class HomeState {
       initHome: initHome ?? this.initHome,
       selectFolder: selectFolder ?? this.selectFolder,
       folderFromMenu: folderFromMenu ?? this.folderFromMenu,
+      recentOpen: recentOpen ?? this.recentOpen,
+      recentApps: recentApps ?? this.recentApps,
       folderData: folderData ?? this.folderData,
     );
   }
@@ -122,6 +133,7 @@ class HomeController extends StateNotifier<HomeState> {
     } else if (state.folderData.containsKey(title)) {
       // 폴더를 어디서 열었는지 기록(드로어=true / 메인=false) 후, 메뉴 오버레이를 열어 폴더 표시
       final bool fromMenu = state.menuOpen;
+      addRecent(title);
       state = state.copyWith(menuOpen: true, menuOpacity: 1, folderFromMenu: fromMenu, selectFolder: title);
     } else if (state.links.containsKey(title)) {
       final Uri url = Uri.parse(state.links[title]);
@@ -139,9 +151,26 @@ class HomeController extends StateNotifier<HomeState> {
         ref.read(manageControllerProvider.notifier).setProject(project);
         context.push('/project_detail');
       } else {
+        addRecent(title);
         context.push('/$title');
       }
     }
+  }
+
+  // 최근 연 앱 기록: 중복 제거 후 맨 앞에 추가, 최대 8개 유지
+  void addRecent(String key) {
+    final List<String> list = [...state.recentApps]..remove(key);
+    list.insert(0, key);
+    if (list.length > 8) list.removeRange(8, list.length);
+    state = state.copyWith(recentApps: list);
+  }
+
+  void openRecent() {
+    state = state.copyWith(recentOpen: true);
+  }
+
+  void closeRecent() {
+    state = state.copyWith(recentOpen: false);
   }
 
   // 홈 버튼: 앱스 메뉴/폴더를 닫고 메인(탭1)으로 복귀
