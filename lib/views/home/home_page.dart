@@ -74,11 +74,13 @@ class _HomePageState extends ConsumerState<HomePage> with RiverpodMixin, TickerP
           ),
           // menu 오픈 시 메인위젯
           AnimatedPositioned(
-            duration: Duration(milliseconds: 200),
+            duration: Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
             bottom: homeState.menuOpen ? 0 : -(app_height),
+            // 페이드 없이 순수 슬라이드 → 열기(아래→위)/닫기(위→아래)가 대칭으로 보이도록
             child: AnimatedOpacity(
-              duration: Duration(milliseconds: 400),
-              opacity: homeState.menuOpen ? 1 : 0,
+              duration: Duration(milliseconds: 250),
+              opacity: 1,
               child: Container(
                 width: app_width,
                 height: app_height,
