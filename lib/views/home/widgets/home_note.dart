@@ -28,6 +28,9 @@ class _HomeNoteState extends ConsumerState<HomeNote> with RiverpodMixin {
 
   @override
   Widget build(BuildContext context) {
+    // 최근 수정일 내림차순으로 정렬 (위에서부터 최신 3개)
+    final notes = [...noteState.noteList]
+      ..sort((a, b) => DateTime.parse(b.updateAt ?? '1999-12-31').compareTo(DateTime.parse(a.updateAt ?? '1999-12-31')));
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(color: pWhite, borderRadius: BorderRadius.circular(20)),
@@ -67,11 +70,15 @@ class _HomeNoteState extends ConsumerState<HomeNote> with RiverpodMixin {
                   : Column(
                       spacing: 5,
                       children: [
-                        for (var i in noteState.noteList.take(3))
+                        // 3칸 고정: 위에서부터 최신 노트로 채우고, 모자라면 빈칸
+                        for (int idx = 0; idx < 3; idx++)
                           Expanded(
-                            child: Builder(
-                              builder: (context) {
-                                DateTime noteCreate = DateTime.parse(i.createAt ?? '1999-12-31');
+                            child: idx >= notes.length
+                                ? const SizedBox.shrink()
+                                : Builder(
+                                    builder: (context) {
+                                      final i = notes[idx];
+                                      DateTime noteCreate = DateTime.parse(i.createAt ?? '1999-12-31');
                                 DateTime noteUpdate = DateTime.parse(i.updateAt ?? '1999-12-31');
                                 String noteTitle = i.title ?? '';
                                 if (noteTitle == '') {
