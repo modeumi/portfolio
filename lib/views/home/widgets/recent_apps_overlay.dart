@@ -70,7 +70,7 @@ class RecentAppsOverlay extends ConsumerWidget {
                                       height: 42,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
-                                        color: pBackGrey.withValues(alpha: 0.6),
+                                        color: backSurface,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Icon(_icons[key] ?? Icons.apps, color: secondary, size: 24),
