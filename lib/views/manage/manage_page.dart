@@ -20,6 +20,8 @@ class ManagePage extends ConsumerStatefulWidget {
 
 class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin, TickerProviderStateMixin {
   bool permission = false;
+  bool projectsLoading = true;
+  bool profilesLoading = true;
   late final TabController tabController = TabController(length: 2, vsync: this);
 
   @override
@@ -49,8 +51,12 @@ class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin, Tic
         setState(() {
           permission = true;
         });
-        manageController.getProjects();
-        profileController.getProfiles();
+        manageController.getProjects().then((_) {
+          if (mounted) setState(() => projectsLoading = false);
+        });
+        profileController.getProfiles().then((_) {
+          if (mounted) setState(() => profilesLoading = false);
+        });
       }
     });
   }
@@ -141,7 +147,9 @@ class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin, Tic
     final projects = manageState.projectList;
     return Stack(
       children: [
-        if (projects.isEmpty)
+        if (projectsLoading)
+          Center(child: CircularProgressIndicator(strokeWidth: 2.5, color: secondary))
+        else if (projects.isEmpty)
           Center(child: Text('등록된 프로젝트가 없습니다', style: custom(18, FontWeight.w400, font_grey)))
         else
           ListView.separated(
@@ -189,7 +197,9 @@ class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin, Tic
     final int checkedCount = profileState.checked.length;
     return Stack(
       children: [
-        if (profiles.isEmpty)
+        if (profilesLoading)
+          Center(child: CircularProgressIndicator(strokeWidth: 2.5, color: secondary))
+        else if (profiles.isEmpty)
           Center(child: Text('등록된 프로필이 없습니다', style: custom(18, FontWeight.w400, font_grey)))
         else
           ListView.separated(
