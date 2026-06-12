@@ -23,6 +23,26 @@ import 'package:portfolio/views/profile/profile_write_page.dart';
 import 'package:portfolio/views/project/project_detail_page.dart';
 import 'package:portfolio/views/project/project_write_page.dart';
 
+// 앱/페이지 열림 전환: 가벼운 페이드 + 살짝 위로 슬라이드
+// (웹 기본 zoom 전환은 첫 프레임 빌드와 겹쳐 버벅여서 GPU 비용 낮은 전환으로 대체)
+CustomTransitionPage<dynamic> _appPage(Widget child) {
+  return CustomTransitionPage(
+    transitionDuration: const Duration(milliseconds: 260),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0, 0.03), end: Offset.zero).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/loading',
@@ -39,30 +59,30 @@ final routerProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) => NoTransitionPage(child: HomePage()),
           ),
 
-          GoRoute(path: '/message', builder: (context, state) => MessageListPage()),
-          GoRoute(path: '/message_target', builder: (context, state) => MessageTargetPage()),
-          GoRoute(path: '/message_chat', builder: (context, state) => MessageChatPage()),
+          GoRoute(path: '/message', pageBuilder: (context, state) => _appPage(MessageListPage())),
+          GoRoute(path: '/message_target', pageBuilder: (context, state) => _appPage(MessageTargetPage())),
+          GoRoute(path: '/message_chat', pageBuilder: (context, state) => _appPage(MessageChatPage())),
 
-          GoRoute(path: '/note', builder: (context, state) => NotePage()),
-          GoRoute(path: '/note_write', builder: (context, state) => NoteWritePage()),
+          GoRoute(path: '/note', pageBuilder: (context, state) => _appPage(NotePage())),
+          GoRoute(path: '/note_write', pageBuilder: (context, state) => _appPage(NoteWritePage())),
 
           GoRoute(
             path: '/calendar',
-            builder: (context, state) {
+            pageBuilder: (context, state) {
               final previous = state.extra as String? ?? '';
-              return CalendarPage(previous: previous);
+              return _appPage(CalendarPage(previous: previous));
             },
           ),
           GoRoute(
             path: '/calendar_add_schedule',
-            builder: (context, state) {
+            pageBuilder: (context, state) {
               // 편집 진입(detail)에서는 extra가 없으므로 null 안전 처리
               final previous = state.extra as String? ?? '';
-              return CalendarAddSchedulePage(previous: previous);
+              return _appPage(CalendarAddSchedulePage(previous: previous));
             },
           ),
-          GoRoute(path: '/calendar_detail', builder: (context, state) => CalendarDetailPage()),
-          GoRoute(path: '/calendar_search', builder: (context, state) => CalendarSearchPage()),
+          GoRoute(path: '/calendar_detail', pageBuilder: (context, state) => _appPage(CalendarDetailPage())),
+          GoRoute(path: '/calendar_search', pageBuilder: (context, state) => _appPage(CalendarSearchPage())),
           GoRoute(
             path: '/calendar_daily_schedule',
             pageBuilder: (context, state) {
@@ -82,13 +102,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           return FieldLayout(child);
         },
         routes: [
-          GoRoute(path: '/login', builder: (context, state) => LoginPage()),
-          GoRoute(path: '/manage', builder: (context, state) => ManagePage()),
-          GoRoute(path: '/profile', builder: (context, state) => ProfilePage()),
-          GoRoute(path: '/profile_detail', builder: (context, state) => ProfileDetailPage()),
-          GoRoute(path: '/profile_write', builder: (context, state) => ProfileWritePage()),
-          GoRoute(path: '/project_detail', builder: (context, state) => ProjectDetailPage()),
-          GoRoute(path: '/project_write', builder: (context, state) => ProjectWritePage()),
+          GoRoute(path: '/login', pageBuilder: (context, state) => _appPage(LoginPage())),
+          GoRoute(path: '/manage', pageBuilder: (context, state) => _appPage(ManagePage())),
+          GoRoute(path: '/profile', pageBuilder: (context, state) => _appPage(ProfilePage())),
+          GoRoute(path: '/profile_detail', pageBuilder: (context, state) => _appPage(ProfileDetailPage())),
+          GoRoute(path: '/profile_write', pageBuilder: (context, state) => _appPage(ProfileWritePage())),
+          GoRoute(path: '/project_detail', pageBuilder: (context, state) => _appPage(ProjectDetailPage())),
+          GoRoute(path: '/project_write', pageBuilder: (context, state) => _appPage(ProjectWritePage())),
         ],
       ),
     ],
