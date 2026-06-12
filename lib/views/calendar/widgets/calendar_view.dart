@@ -61,8 +61,11 @@ class _CalendarViewState extends ConsumerState<CalendarView> with RiverpodMixin 
     filtered.sort((a, b) => (b['model'].date as List).length.compareTo((a['model'].date as List).length));
     if (filtered.isNotEmpty) {
       Map<String, int> weekIndexInfo = {};
+      // 날짜별로 이미 쌓인 일정 개수 (홈에서 하루 최대 2개 표출 제한용)
+      Map<String, int> weekCountInfo = {};
       for (var i in week) {
         weekIndexInfo[i] = 0;
+        weekCountInfo[i] = 0;
       }
       List<Map<String, dynamic>> returnData = [];
 
@@ -76,6 +79,11 @@ class _CalendarViewState extends ConsumerState<CalendarView> with RiverpodMixin 
         }
 
         int maxIndex = elementIndex.values.reduce((a, b) => a > b ? a : b);
+        // 이 일정이 걸친 날짜들 중 이미 쌓인 일정 개수의 최대값
+        int maxCount = 0;
+        for (var key in elementIndex.keys) {
+          if (weekCountInfo[key]! > maxCount) maxCount = weekCountInfo[key]!;
+        }
         int rowIndex = firstDate.weekday == 7 ? 0 : firstDate.weekday;
 
         int titleByte = utf8.encode(i['model'].title).length;
@@ -86,7 +94,8 @@ class _CalendarViewState extends ConsumerState<CalendarView> with RiverpodMixin 
             ? 32
             : 18;
 
-        bool limit = widget.showScheduleLimit && maxIndex > 0;
+        // 홈에서는 하루 2개까지만 표출(3번째부터 숨김)
+        bool limit = widget.showScheduleLimit && maxCount >= 2;
         Map<String, dynamic> cellData = {
           'rowIndex': limit ? 0 : rowIndex,
           'cellIndex': limit ? 0 : maxIndex,
@@ -96,6 +105,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> with RiverpodMixin 
 
         for (var key in elementIndex.keys) {
           weekIndexInfo[key] = maxIndex + elementHeight;
+          weekCountInfo[key] = maxCount + 1;
         }
 
         returnData.add(cellData);
