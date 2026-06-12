@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/controllers/login_controller.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
+import 'package:portfolio/core/widgets/empty_state.dart';
 import 'package:portfolio/views/manage/widgets/project_item.dart';
 import 'package:portfolio/views/profile/widgets/profile_item.dart';
 import 'package:utility/color.dart';
@@ -150,7 +151,7 @@ class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin, Tic
         if (projectsLoading)
           Center(child: CircularProgressIndicator(strokeWidth: 2.5, color: secondary))
         else if (projects.isEmpty)
-          Center(child: Text('등록된 프로젝트가 없습니다', style: custom(18, FontWeight.w400, font_grey)))
+          const EmptyState(icon: Icons.folder_open_outlined, message: '등록된 프로젝트가 없습니다', sub: '하단 버튼으로 프로젝트를 추가해보세요')
         else
           ListView.separated(
             padding: EdgeInsets.fromLTRB(20, 20, 20, 90),
@@ -200,7 +201,7 @@ class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin, Tic
         if (profilesLoading)
           Center(child: CircularProgressIndicator(strokeWidth: 2.5, color: secondary))
         else if (profiles.isEmpty)
-          Center(child: Text('등록된 프로필이 없습니다', style: custom(18, FontWeight.w400, font_grey)))
+          const EmptyState(icon: Icons.badge_outlined, message: '등록된 프로필이 없습니다', sub: '하단 버튼으로 프로필을 추가해보세요')
         else
           ListView.separated(
             padding: EdgeInsets.fromLTRB(20, 20, 20, 90),

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/custom_text_field.dart';
+import 'package:portfolio/core/widgets/empty_state.dart';
 import 'package:portfolio/models/message_target_model.dart';
 import 'package:portfolio/views/message/widgets/message_search_field.dart';
 import 'package:utility/color.dart';
@@ -232,10 +233,10 @@ class _MessageTargetPageState extends ConsumerState<MessageTargetPage> with Rive
                       child: Column(spacing: 10, children: [for (var i in messageState.searchTargets) MessageSearchField(model: i)]),
                     ),
                   )
-                : SizedBox(
+                : const SizedBox(
                     width: double.infinity,
                     height: 300,
-                    child: Center(child: Text('대화 대상이 없습니다.', style: black(25, FontWeight.w800))),
+                    child: EmptyState(icon: Icons.person_search_outlined, message: '대화 대상이 없습니다'),
                   ),
           ],
         ),

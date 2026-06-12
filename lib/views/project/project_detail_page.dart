@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
+import 'package:portfolio/core/widgets/empty_state.dart';
 import 'package:portfolio/models/project_model.dart';
 import 'package:portfolio/views/project/widgets/project_content.dart';
 import 'package:portfolio/views/project/widgets/project_icon.dart';
@@ -84,9 +85,9 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> with Rive
                       padding: const EdgeInsets.fromLTRB(22, 32, 22, 80),
                       child: hasContent
                           ? ProjectContent(project.content!)
-                          : Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 50),
-                              child: Center(child: Text('등록된 소개 내용이 없습니다', style: custom(16, FontWeight.w400, font_grey))),
+                          : const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 50),
+                              child: EmptyState(icon: Icons.description_outlined, message: '등록된 소개 내용이 없습니다'),
                             ),
                     ),
                   ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
+import 'package:portfolio/core/widgets/empty_state.dart';
 import 'package:portfolio/views/profile/widgets/profile_photo_header.dart';
 import 'package:portfolio/views/project/widgets/project_content.dart';
 import 'package:utility/color.dart';
@@ -49,9 +50,9 @@ class _ProfileDetailPageState extends ConsumerState<ProfileDetailPage> with Rive
               padding: const EdgeInsets.fromLTRB(22, 10, 22, 60),
               child: hasContent
                   ? ProjectContent(profile.content!)
-                  : Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 50),
-                      child: Center(child: Text('작성된 내용이 없습니다', style: custom(16, FontWeight.w400, font_grey))),
+                  : const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 50),
+                      child: EmptyState(icon: Icons.description_outlined, message: '작성된 내용이 없습니다'),
                     ),
             ),
           ],

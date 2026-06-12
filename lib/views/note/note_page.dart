@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
+import 'package:portfolio/core/widgets/empty_state.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
@@ -136,16 +137,9 @@ class _NotePageState extends ConsumerState<NotePage> with RiverpodMixin {
                       ),
                     ),
                     if (noteState.noteList.isEmpty)
-                      Container(
-                        width: double.infinity,
+                      const Padding(
                         padding: EdgeInsets.symmetric(vertical: 150),
-                        child: Column(
-                          spacing: 10,
-                          children: [
-                            Text('노트가 없습니다', style: black(18, FontWeight.w400)),
-                            Text('노트를 작성하려면 추가 버튼을 누르세요.', style: custom(16, FontWeight.w400, font_grey)),
-                          ],
-                        ),
+                        child: EmptyState(icon: Icons.sticky_note_2_outlined, message: '노트가 없습니다', sub: '추가 버튼으로 노트를 작성해보세요'),
                       )
                     else
                       Padding(
