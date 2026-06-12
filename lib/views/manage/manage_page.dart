@@ -6,6 +6,7 @@ import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/controllers/login_controller.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/empty_state.dart';
+import 'package:portfolio/core/widgets/loading_view.dart';
 import 'package:portfolio/views/manage/widgets/project_item.dart';
 import 'package:portfolio/views/profile/widgets/profile_item.dart';
 import 'package:utility/color.dart';
@@ -149,7 +150,7 @@ class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin, Tic
     return Stack(
       children: [
         if (projectsLoading)
-          Center(child: CircularProgressIndicator(strokeWidth: 2.5, color: secondary))
+          const LoadingView()
         else if (projects.isEmpty)
           const EmptyState(icon: Icons.folder_open_outlined, message: '등록된 프로젝트가 없습니다', sub: '하단 버튼으로 프로젝트를 추가해보세요')
         else
@@ -199,7 +200,7 @@ class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin, Tic
     return Stack(
       children: [
         if (profilesLoading)
-          Center(child: CircularProgressIndicator(strokeWidth: 2.5, color: secondary))
+          const LoadingView()
         else if (profiles.isEmpty)
           const EmptyState(icon: Icons.badge_outlined, message: '등록된 프로필이 없습니다', sub: '하단 버튼으로 프로필을 추가해보세요')
         else
