@@ -144,9 +144,9 @@ class HomeController extends StateNotifier<HomeState> {
     }
   }
 
-  // 홈 버튼: 앱스 메뉴/폴더를 닫고 메인 화면 상태로 복귀
+  // 홈 버튼: 앱스 메뉴/폴더를 닫고 메인(탭1)으로 복귀
   void goMain() {
-    state = state.copyWith(menuOpen: false, menuOpacity: 0, selectFolder: '');
+    state = state.copyWith(menuOpen: false, menuOpacity: 0, selectFolder: '', pageNumber: 0);
   }
 
   // 폴더 닫기: 드로어에서 열었으면 폴더만 닫고, 메인에서 열었으면 메뉴까지 닫아 직전 home으로
@@ -173,8 +173,11 @@ class HomeController extends StateNotifier<HomeState> {
   }
 
   void pushPageIcon(int index) {
-    pageController.animateToPage(index);
-
+    try {
+      pageController.animateToPage(index);
+    } catch (_) {
+      // 캐러셀이 아직 마운트되지 않은 경우(메뉴 열림/다른 라우트)는 무시
+    }
     setPageNumber(index);
   }
 
