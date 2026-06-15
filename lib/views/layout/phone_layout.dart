@@ -65,9 +65,11 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> with RiverpodMixin {
               child: LoadingIndicator(color: primary),
             )
           // 고정 설계 크기(app_width x app_height)를 창 크기에 맞춰 비율 유지하며 스케일
-          : Center(
+          // SizedBox.expand로 꽉 찬 제약을 줘야 창이 커질 때도 함께 스케일됨(Center는 작아질 때만 축소)
+          : SizedBox.expand(
               child: FittedBox(
                 fit: BoxFit.contain,
+                alignment: Alignment.center,
                 child: SizedBox(
                   width: app_width,
                   height: app_height,
