@@ -64,10 +64,17 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> with RiverpodMixin {
               decoration: BoxDecoration(color: pBackBlack),
               child: LoadingIndicator(color: primary),
             )
-          : Stack(
-              children: [
-                if (layoutState.svgData != null)
-                  Center(
+          // 고정 설계 크기(app_width x app_height)를 창 크기에 맞춰 비율 유지하며 스케일
+          : Center(
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: SizedBox(
+                  width: app_width,
+                  height: app_height,
+                  child: Stack(
+                    children: [
+                      if (layoutState.svgData != null)
+                        Center(
                     child: SizedBox(
                       width: app_width,
                       height: app_height,
@@ -304,7 +311,10 @@ class _PhoneLayoutState extends ConsumerState<PhoneLayout> with RiverpodMixin {
                     ),
                   ),
                 ),
-              ],
+                    ],
+                  ),
+                ),
+              ),
             ),
     );
   }
