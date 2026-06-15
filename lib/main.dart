@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:portfolio/app_router.dart';
-import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/core/firebase_options.dart';
 import 'package:utility/import_package.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -26,29 +25,9 @@ class MainApp extends ConsumerWidget {
     return OKToast(
       child: MaterialApp.router(
         supportedLocales: const [Locale('ko', 'KR')],
-      debugShowCheckedModeBanner: false,
-      builder: (context, child) => LayoutBuilder(
-        builder: (context, constraints) {
-          final double width = app_width + 40;
-          final double height = app_height + 50;
-          return Center(
-            child: Container(
-              constraints: BoxConstraints(minWidth: width, minHeight: height),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: SizedBox(
-                    width: constraints.maxWidth < width ? width : constraints.maxWidth,
-                    height: constraints.maxHeight < height ? height : constraints.maxHeight,
-                    child: child,
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+        debugShowCheckedModeBanner: false,
+        // 뷰포트 크기를 그대로 전달 → 각 레이아웃이 스스로 스케일(phone_layout은 FittedBox)
+        builder: (context, child) => child ?? const SizedBox.shrink(),
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
