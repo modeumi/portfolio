@@ -193,12 +193,34 @@ class MessageController extends StateNotifier<MessageState> {
   Future<void> loadChatList() async {
     try {
       QuerySnapshot chatList = await store.collection('ChatUserInfo').get();
+
+      // 각 채팅방의 실제 마지막 메시지(작성자/관리자 구분 없이)를 계산해 미리보기에 사용
+      // (ChatUserInfo.lastContent는 작성자 발신 시에만 갱신되어 관리자 답장이 반영되지 않음)
+      QuerySnapshot messageDocs = await store.collection('Message').get();
+      Map<String, Map<String, String>> lastMessages = {};
+      for (var doc in messageDocs.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        if (data.isEmpty) continue;
+        List<String> keys = data.keys.toList()..sort((a, b) => DateTime.parse(a).compareTo(DateTime.parse(b)));
+        String lastKey = keys.last;
+        String msg = ((data[lastKey] as Map<String, dynamic>?)?['message'] ?? '').toString();
+        lastMessages[doc.id] = {
+          'lastContent': msg.contains('portfolio-f7c58') ? '이미지' : msg,
+          'lastDate': lastKey.split(' ').first,
+        };
+      }
+
       List<MessageTargetModel> models = [];
       for (var i in chatList.docs) {
         Map<String, dynamic> docs = i.data() as Map<String, dynamic>;
         docs['name'] = i.id;
 
         MessageTargetModel model = MessageTargetModel.fromMap(docs);
+        // 실제 마지막 메시지로 미리보기/날짜 보정
+        final last = lastMessages[i.id];
+        if (last != null) {
+          model = model.copyWith(lastContent: last['lastContent'], lastDate: last['lastDate']);
+        }
         models.add(model);
       }
       state = state.copyWith(targets: models);
