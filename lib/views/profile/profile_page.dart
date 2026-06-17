@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:portfolio/core/app_colors.dart';
+import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/empty_state.dart';
 import 'package:portfolio/core/widgets/loading_view.dart';
@@ -39,26 +40,28 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with RiverpodMixin {
   Widget build(BuildContext context) {
     final bool hasContent = profile?.content != null && profile!.content!.isNotEmpty;
 
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(color: pWhite),
-      child: loading
-          ? const LoadingView()
-          : !hasContent
-          ? const EmptyState(icon: Icons.badge_outlined, message: '등록된 프로필이 없습니다')
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  // 상단 상태바 영역 확보
-                  const SizedBox(height: 44),
-                  const ProfilePhotoHeader(),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(22, 10, 22, 60),
-                    child: ProjectContent(profile!.content!),
-                  ),
-                ],
+    return Padding(
+      // 상단 상태바 / 하단 네비 영역을 제외한 영역에만 내용 배치 (safe area)
+      padding: EdgeInsets.only(top: statusBarHeight, bottom: navBarHeight),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(color: pWhite),
+        child: loading
+            ? const LoadingView()
+            : !hasContent
+            ? const EmptyState(icon: Icons.badge_outlined, message: '등록된 프로필이 없습니다')
+            : SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const ProfilePhotoHeader(),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(22, 10, 22, 40),
+                      child: ProjectContent(profile!.content!),
+                    ),
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }

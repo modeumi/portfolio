@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:portfolio/core/app_colors.dart';
+import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/empty_state.dart';
 import 'package:portfolio/models/project_model.dart';
@@ -43,7 +44,10 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> with Rive
     final Color? bgColor = (bg != null && bg.startsWith('#')) ? _hexColor(bg) : null;
     final bool hasContent = project.content != null && project.content!.isNotEmpty;
 
-    return Container(
+    return Padding(
+      // 상단 상태바 / 하단 네비 영역을 제외한 영역에만 내용 배치 (safe area)
+      padding: EdgeInsets.only(top: statusBarHeight, bottom: navBarHeight),
+      child: Container(
       width: double.infinity,
       decoration: BoxDecoration(color: pWhite),
       child: Stack(
@@ -89,7 +93,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> with Rive
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
                         boxShadow: [BoxShadow(offset: const Offset(0, -6), blurRadius: 18, color: Colors.black.withValues(alpha: 0.06))],
                       ),
-                      padding: const EdgeInsets.fromLTRB(22, 32, 22, 80),
+                      padding: const EdgeInsets.fromLTRB(22, 32, 22, 40),
                       child: hasContent
                           ? ProjectContent(project.content!)
                           : const Padding(
@@ -103,6 +107,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> with Rive
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -132,7 +137,7 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> with Rive
     return Container(
       width: double.infinity,
       decoration: deco,
-      padding: const EdgeInsets.fromLTRB(24, 82, 24, 58),
+      padding: const EdgeInsets.fromLTRB(24, 40, 24, 58),
       child: Column(
         children: [
           // 아이콘 카드 (은은한 컬러 그림자)
