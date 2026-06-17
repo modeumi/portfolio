@@ -44,7 +44,7 @@ class ProjectContent extends StatelessWidget {
       customStylesBuilder: (element) {
         switch (element.localName) {
           case 'a':
-            return {'color': '#4A90A4', 'font-weight': '600', 'text-decoration': 'underline'};
+            return {'color': '#4A90A4', 'font-weight': '600', 'text-decoration': 'none'};
           case 'h2':
             return {'font-size': '24px', 'font-weight': '800', 'margin': '18px 0 6px'};
           case 'h3':
