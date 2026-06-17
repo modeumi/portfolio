@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/empty_state.dart';
 import 'package:portfolio/models/project_model.dart';
 import 'package:portfolio/views/project/widgets/project_content.dart';
 import 'package:portfolio/views/project/widgets/project_icon.dart';
-import 'package:utility/color.dart';
 import 'package:utility/textstyle.dart';
 
 // 프로젝트 소개 페이지 - 포트폴리오 쇼케이스 느낌으로 꾸민 상세 화면
@@ -20,6 +18,15 @@ class ProjectDetailPage extends ConsumerStatefulWidget {
 }
 
 class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> with RiverpodMixin {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 휴대폰 안쪽 표시: 흰 본문에 맞춰 상태바/네비 아이콘을 어둡게
+      layoutController.changeColor(true);
+    });
+  }
+
   // #RRGGBB / #AARRGGBB 색상 파싱
   Color? _hexColor(String value) {
     String v = value.replaceAll('#', '').trim();
@@ -92,25 +99,6 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> with Rive
                     ),
                   ),
                 ],
-              ),
-            ),
-          ),
-
-          // 플로팅 뒤로가기
-          Positioned(
-            top: 14,
-            left: 14,
-            child: GestureDetector(
-              onTap: () => context.pop(),
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: pWhite.withValues(alpha: 0.9),
-                  shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(offset: const Offset(0, 2), color: pBackGrey2, blurRadius: 8)],
-                ),
-                child: Icon(Icons.arrow_back_ios_new, size: 19, color: color_black),
               ),
             ),
           ),

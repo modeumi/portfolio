@@ -24,6 +24,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with RiverpodMixin {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 휴대폰 안쪽 표시: 흰 배경에 맞춰 상태바/네비 아이콘을 어둡게
+      layoutController.changeColor(true);
       final model = await profileController.loadSelected();
       if (!mounted) return;
       setState(() {
@@ -47,6 +49,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with RiverpodMixin {
           : SingleChildScrollView(
               child: Column(
                 children: [
+                  // 상단 상태바 영역 확보
+                  const SizedBox(height: 44),
                   const ProfilePhotoHeader(),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(22, 10, 22, 60),

@@ -83,6 +83,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(path: '/calendar_detail', pageBuilder: (context, state) => _appPage(CalendarDetailPage())),
           GoRoute(path: '/calendar_search', pageBuilder: (context, state) => _appPage(CalendarSearchPage())),
+
+          // 방문자 view(내정보/프로젝트 소개)는 휴대폰 안쪽에서 표시 (작성/관리는 FieldLayout 유지)
+          GoRoute(path: '/profile', pageBuilder: (context, state) => _appPage(ProfilePage())),
+          GoRoute(path: '/project_detail', pageBuilder: (context, state) => _appPage(ProjectDetailPage())),
+
           GoRoute(
             path: '/calendar_daily_schedule',
             pageBuilder: (context, state) {
@@ -104,10 +109,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(path: '/login', pageBuilder: (context, state) => _appPage(LoginPage())),
           GoRoute(path: '/manage', pageBuilder: (context, state) => _appPage(ManagePage())),
-          GoRoute(path: '/profile', pageBuilder: (context, state) => _appPage(ProfilePage())),
           GoRoute(path: '/profile_detail', pageBuilder: (context, state) => _appPage(ProfileDetailPage())),
           GoRoute(path: '/profile_write', pageBuilder: (context, state) => _appPage(ProfileWritePage())),
-          GoRoute(path: '/project_detail', pageBuilder: (context, state) => _appPage(ProjectDetailPage())),
           GoRoute(path: '/project_write', pageBuilder: (context, state) => _appPage(ProjectWritePage())),
         ],
       ),
