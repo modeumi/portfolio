@@ -44,11 +44,11 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> with Rive
     final Color? bgColor = (bg != null && bg.startsWith('#')) ? _hexColor(bg) : null;
     final bool hasContent = project.content != null && project.content!.isNotEmpty;
 
-    return Padding(
-      // 상단 상태바 / 하단 네비 영역을 제외한 영역에만 내용 배치 (safe area)
-      padding: EdgeInsets.only(top: statusBarHeight, bottom: navBarHeight),
-      child: Container(
+    return Container(
       width: double.infinity,
+      height: double.infinity,
+      // 배경은 상태바/네비 뒤까지 채우고, 내용만 그 영역을 제외하고 배치 (safe area)
+      padding: EdgeInsets.only(top: statusBarHeight, bottom: navBarHeight),
       decoration: BoxDecoration(color: pWhite),
       child: Stack(
         children: [
@@ -107,7 +107,6 @@ class _ProjectDetailPageState extends ConsumerState<ProjectDetailPage> with Rive
             ),
           ),
         ],
-      ),
       ),
     );
   }

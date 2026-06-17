@@ -40,28 +40,27 @@ class _ProfilePageState extends ConsumerState<ProfilePage> with RiverpodMixin {
   Widget build(BuildContext context) {
     final bool hasContent = profile?.content != null && profile!.content!.isNotEmpty;
 
-    return Padding(
-      // 상단 상태바 / 하단 네비 영역을 제외한 영역에만 내용 배치 (safe area)
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      // 배경은 상태바/네비 뒤까지 채우고, 내용만 그 영역을 제외하고 배치 (safe area)
       padding: EdgeInsets.only(top: statusBarHeight, bottom: navBarHeight),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(color: pWhite),
-        child: loading
-            ? const LoadingView()
-            : !hasContent
-            ? const EmptyState(icon: Icons.badge_outlined, message: '등록된 프로필이 없습니다')
-            : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    const ProfilePhotoHeader(),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(22, 10, 22, 40),
-                      child: ProjectContent(profile!.content!),
-                    ),
-                  ],
-                ),
+      decoration: BoxDecoration(color: pWhite),
+      child: loading
+          ? const LoadingView()
+          : !hasContent
+          ? const EmptyState(icon: Icons.badge_outlined, message: '등록된 프로필이 없습니다')
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  const ProfilePhotoHeader(),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(22, 10, 22, 40),
+                    child: ProjectContent(profile!.content!),
+                  ),
+                ],
               ),
-      ),
+            ),
     );
   }
 }
