@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:portfolio/core/app_setting.dart';
 import 'package:utility/color.dart';
+import 'package:utility/import_package.dart';
 import 'package:utility/textstyle.dart';
 
 /// content(HTML 본문)를 실제 HTML로 렌더링한다.
@@ -20,6 +20,12 @@ class ProjectContent extends StatelessWidget {
     return HtmlWidget(
       content,
       textStyle: custom(18, FontWeight.w400, color_black).copyWith(height: 1.5),
+      // <a href> 탭 시 외부 브라우저(새 탭)로 이동
+      onTapUrl: (url) async {
+        final uri = Uri.tryParse(url);
+        if (uri == null) return false;
+        return launchUrl(uri, mode: LaunchMode.externalApplication);
+      },
       // figure 단위로: 안의 사진들을 가로 한 줄로, figcaption은 그 아래 한 번만
       customWidgetBuilder: (element) {
         if (element.localName != 'figure') return null;
@@ -37,6 +43,8 @@ class ProjectContent extends StatelessWidget {
       },
       customStylesBuilder: (element) {
         switch (element.localName) {
+          case 'a':
+            return {'color': '#4A90A4', 'font-weight': '600', 'text-decoration': 'underline'};
           case 'h2':
             return {'font-size': '24px', 'font-weight': '800', 'margin': '18px 0 6px'};
           case 'h3':
