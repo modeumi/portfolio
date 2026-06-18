@@ -53,6 +53,9 @@ class MessageController extends StateNotifier<MessageState> {
 
   DocumentSnapshot? lastDoc;
 
+  // 채팅 입장 시 확인한 비밀번호를 채팅 화면으로 전달(잠긴 대화 재입장 시 재입력 방지)
+  String enteredPassword = '';
+
   final store = FirebaseFirestore.instance;
 
   void setTarget(MessageTargetModel model) {

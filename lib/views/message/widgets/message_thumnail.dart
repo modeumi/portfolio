@@ -30,6 +30,7 @@ class _MessageThumnailState extends ConsumerState<MessageThumnail> with Riverpod
       onTap: () {
         messageController.setTarget(widget.model);
         password.clear();
+        messageController.enteredPassword = '';
 
         if (widget.model.lock! && !layoutState.admin) {
           bool validPassword = true;
@@ -62,6 +63,7 @@ class _MessageThumnailState extends ConsumerState<MessageThumnail> with Riverpod
                     setState(() {
                       validPassword = messageController.checkPassword(password.text);
                       if (validPassword) {
+                        messageController.enteredPassword = password.text;
                         layoutController.changeDialogState(false);
                         Navigator.pop(context);
                         context.push('/message_chat');

@@ -120,6 +120,7 @@ class _MessageTargetPageState extends ConsumerState<MessageTargetPage> with Rive
                 onTap: () async {
                   bool existing = false;
                   bool adminName = false;
+                  messageController.enteredPassword = '';
                   if (search.text.toLowerCase() == 'modeumi') {
                     adminName = true;
                     layoutController.changeDialogState(true);
@@ -181,6 +182,7 @@ class _MessageTargetPageState extends ConsumerState<MessageTargetPage> with Rive
                                 validPassword = messageController.checkPassword(password.text, target);
                               });
                               if (validPassword) {
+                                messageController.enteredPassword = password.text;
                                 layoutController.changeDialogState(false);
                                 Navigator.pop(context, true);
                               }
