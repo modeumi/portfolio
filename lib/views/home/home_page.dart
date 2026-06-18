@@ -76,6 +76,8 @@ class _HomePageState extends ConsumerState<HomePage> with RiverpodMixin, TickerP
           AnimatedPositioned(
             duration: Duration(milliseconds: 250),
             curve: Curves.easeOutCubic,
+            left: 0,
+            right: 0,
             bottom: homeState.menuOpen ? 0 : -(app_height),
             // 페이드 없이 순수 슬라이드 → 열기(아래→위)/닫기(위→아래)가 대칭으로 보이도록
             child: AnimatedOpacity(
@@ -121,13 +123,28 @@ class _HomePageState extends ConsumerState<HomePage> with RiverpodMixin, TickerP
                                   child: Container(
                                     padding: EdgeInsets.all(20),
                                     decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: color_white.withValues(alpha: 0.5)),
-                                    child: GridView(
-                                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 4,
-                                        crossAxisSpacing: 10,
-                                        mainAxisSpacing: 10,
-                                      ),
-                                      children: [for (var i in homeState.folderData[homeState.selectFolder].entries) HomeIcon(i.key, i.value, true)],
+                                    child: LayoutBuilder(
+                                      builder: (context, c) {
+                                        final entries = homeState.folderData[homeState.selectFolder].entries.toList();
+                                        const int minCells = 16; // 4 x 4 (여분 빈칸 확보)
+                                        // 가용 높이를 4행으로 나눠 셀 높이 결정(아이콘+라벨 overflow 방지)
+                                        final double rowExtent = (c.maxHeight - 10 * 3) / 4;
+                                        final int count = entries.length > minCells ? entries.length : minCells;
+                                        return GridView.builder(
+                                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 4,
+                                            crossAxisSpacing: 10,
+                                            mainAxisSpacing: 10,
+                                            mainAxisExtent: rowExtent,
+                                          ),
+                                          itemCount: count,
+                                          itemBuilder: (context, i) {
+                                            if (i >= entries.length) return const SizedBox.shrink();
+                                            final e = entries[i];
+                                            return HomeIcon(e.key, e.value, true);
+                                          },
+                                        );
+                                      },
                                     ),
                                   ),
                                 ),
