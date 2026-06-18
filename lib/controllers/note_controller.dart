@@ -120,7 +120,8 @@ class NoteController extends StateNotifier<NoteState> {
   }
 
   void sortNote() {
-    List<NoteModel> modelList = state.noteList;
+    // 새 리스트로 복사해 정렬 후 상태에 반영해야 UI가 리빌드됨 (in-place 정렬은 통지되지 않음)
+    List<NoteModel> modelList = [...state.noteList];
     String sortKey = state.sortKey;
     bool sortType = state.sortType;
     if (sortKey == 'updateAt') {
@@ -142,9 +143,11 @@ class NoteController extends StateNotifier<NoteState> {
         if (aTitle == '' && bTitle == '') return 0;
         if (aTitle == '') return 1;
         if (bTitle == '') return -1;
-        return sortType ? bTitle.compareTo(aTitle) : aTitle.compareTo(bTitle);
+        // 제목은 기본(sortType=true)을 오름차순(ㄱ→ㅎ)으로 — 날짜의 '최신순' 기본과 직관을 맞춤
+        return sortType ? aTitle.compareTo(bTitle) : bTitle.compareTo(aTitle);
       });
     }
+    state = state.copyWith(noteList: modelList);
   }
 
   void setSortInfo(String key, bool type) {
