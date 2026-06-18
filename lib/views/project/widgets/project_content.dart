@@ -106,6 +106,19 @@ class _FigureGalleryState extends State<_FigureGallery> {
     super.dispose();
   }
 
+  // 사진 탭 → 전체화면 확대 뷰어 (드래그 이동 + 줌 +/- / 원래대로)
+  void _openImageViewer(BuildContext context, String src) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: '이미지 확대',
+      barrierColor: Colors.black.withValues(alpha: 0.92),
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (_, __, ___) => _ImageViewer(src: src),
+      transitionBuilder: (_, anim, __, child) => FadeTransition(opacity: anim, child: child),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -135,7 +148,10 @@ class _FigureGalleryState extends State<_FigureGallery> {
                         for (final src in widget.images)
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 6),
-                            child: _shotImage(src, itemW),
+                            child: GestureDetector(
+                              onTap: () => _openImageViewer(context, src),
+                              child: _shotImage(src, itemW),
+                            ),
                           ),
                       ],
                     ),
@@ -149,6 +165,109 @@ class _FigureGalleryState extends State<_FigureGallery> {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+// 전체화면 이미지 뷰어: 핀치/드래그 + 하단 줌 +/- / 원래대로 버튼
+class _ImageViewer extends StatefulWidget {
+  final String src;
+  const _ImageViewer({required this.src});
+
+  @override
+  State<_ImageViewer> createState() => _ImageViewerState();
+}
+
+class _ImageViewerState extends State<_ImageViewer> {
+  final TransformationController _controller = TransformationController();
+
+  double get _scale => _controller.value.getMaxScaleOnAxis();
+
+  // 화면 중앙을 기준으로 배율 설정 (1~5배)
+  void _setZoom(double next) {
+    final double s = next.clamp(1.0, 5.0);
+    final Size size = MediaQuery.of(context).size;
+    final double cx = size.width / 2;
+    final double cy = size.height / 2;
+    // (cx, cy)를 고정점으로 하는 s배 확대 행렬
+    _controller.value = Matrix4.identity()
+      ..setEntry(0, 0, s)
+      ..setEntry(1, 1, s)
+      ..setEntry(0, 3, cx * (1 - s))
+      ..setEntry(1, 3, cy * (1 - s));
+  }
+
+  void _zoomIn() => _setZoom(_scale + 0.5);
+  void _zoomOut() => _setZoom(_scale - 0.5);
+  void _reset() => _controller.value = Matrix4.identity();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _circleBtn(IconData icon, VoidCallback onTap) {
+    return IconButton(
+      onPressed: onTap,
+      icon: Icon(icon, color: Colors.white, size: 26),
+      splashRadius: 24,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      type: MaterialType.transparency,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: InteractiveViewer(
+              transformationController: _controller,
+              minScale: 1,
+              maxScale: 5,
+              child: Center(
+                child: Image.network(
+                  widget.src,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(Icons.broken_image_outlined, color: Colors.white54, size: 60),
+                ),
+              ),
+            ),
+          ),
+          // 닫기
+          Positioned(
+            top: 16,
+            right: 16,
+            child: SafeArea(child: _circleBtn(Icons.close, () => Navigator.pop(context))),
+          ),
+          // 하단 줌 컨트롤
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 30,
+            child: SafeArea(
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(40),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _circleBtn(Icons.zoom_out, _zoomOut),
+                      _circleBtn(Icons.refresh, _reset),
+                      _circleBtn(Icons.zoom_in, _zoomIn),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
