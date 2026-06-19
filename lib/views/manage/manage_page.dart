@@ -10,7 +10,7 @@ import 'package:portfolio/core/widgets/loading_view.dart';
 import 'package:portfolio/views/manage/widgets/project_item.dart';
 import 'package:portfolio/views/profile/widgets/profile_item.dart';
 import 'package:utility/color.dart';
-import 'package:utility/modal_widget.dart';
+import 'package:portfolio/core/widgets/app_modal.dart';
 import 'package:utility/textstyle.dart';
 
 class ManagePage extends ConsumerStatefulWidget {
@@ -30,6 +30,7 @@ class _ManagePageState extends ConsumerState<ManagePage> with RiverpodMixin, Tic
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         layoutController.changeDialogState(true);
