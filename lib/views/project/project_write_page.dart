@@ -7,7 +7,7 @@ import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/custom_text_field.dart';
 import 'package:portfolio/views/project/widgets/project_icon.dart';
 import 'package:utility/color.dart';
-import 'package:utility/modal_widget.dart';
+import 'package:portfolio/core/widgets/app_modal.dart';
 import 'package:utility/textstyle.dart';
 import 'package:utility/toast_message.dart';
 

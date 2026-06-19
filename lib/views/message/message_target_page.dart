@@ -9,7 +9,7 @@ import 'package:portfolio/models/message_target_model.dart';
 import 'package:portfolio/views/message/widgets/message_search_field.dart';
 import 'package:utility/color.dart';
 import 'package:utility/import_package.dart';
-import 'package:utility/modal_widget.dart';
+import 'package:portfolio/core/widgets/app_modal.dart';
 import 'package:utility/textstyle.dart';
 
 class MessageTargetPage extends ConsumerStatefulWidget {

@@ -4,7 +4,7 @@ import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:portfolio/core/widgets/custom_text_field.dart';
 import 'package:portfolio/models/message_target_model.dart';
 import 'package:utility/color.dart';
-import 'package:utility/modal_widget.dart';
+import 'package:portfolio/core/widgets/app_modal.dart';
 import 'package:utility/textstyle.dart';
 
 class MessageSearchField extends ConsumerStatefulWidget {
