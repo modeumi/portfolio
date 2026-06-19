@@ -8,7 +8,7 @@ import 'package:portfolio/views/calendar/widgets/calendar_view.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
-import 'package:utility/modal_widget.dart';
+import 'package:portfolio/core/widgets/app_modal.dart';
 import 'package:utility/textstyle.dart';
 
 class CalendarPage extends ConsumerStatefulWidget {
@@ -127,6 +127,14 @@ class _CalendarPageState extends ConsumerState<CalendarPage> with RiverpodMixin 
             ),
             CalendarView(
               emptyScheduleAction: () {
+                if (!layoutState.admin) {
+                  showDialog(
+                    context: context,
+                    builder: (context) =>
+                        ModalWidget(width: 300, title: '권한', action: () {}, content: '해당 동작을 위한 권한이 없습니다.', select_button: true),
+                  );
+                  return;
+                }
                 calendarController.changeEdit(false);
                 calendarController.initAddSchedule();
                 context.push('/calendar_add_schedule', extra: '');

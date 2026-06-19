@@ -7,7 +7,7 @@ import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/core/riverpod_mixin.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
-import 'package:utility/modal_widget.dart';
+import 'package:portfolio/core/widgets/app_modal.dart';
 import 'package:utility/textstyle.dart';
 
 class CalendarDetailPage extends ConsumerStatefulWidget {
@@ -123,6 +123,27 @@ class _CalendarDetailPageState extends ConsumerState<CalendarDetailPage> with Ri
                       ],
                     ),
                   ),
+                  if ((calendarState.schedule.note ?? '').trim().isNotEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.fromLTRB(5, 15, 20, 15),
+                      decoration: BoxDecoration(
+                        border: Border(bottom: BorderSide(width: 1, color: color_grey)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 30,
+                        children: [
+                          SvgPicture.asset('assets/images/calendar/note.svg', width: 25),
+                          Expanded(
+                            child: Text(
+                              calendarState.schedule.note!,
+                              style: black(22, FontWeight.w500),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 15.0),
                     child: Row(

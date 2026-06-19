@@ -336,7 +336,13 @@ class CalendarController extends StateNotifier<CalendarState> {
   Future<void> loadDailySchedule() async {
     String strDate = date_to_string_yyyyMMdd('-', state.targetDate);
     final snapshot = await store.collection('Schedule').doc(strDate).get();
-    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+    // 일정이 하나도 없는 날은 문서 자체가 없어 data()가 null → 빈 목록 처리
+    final raw = snapshot.data();
+    if (raw == null) {
+      state = state.copyWith(dailySchedules: []);
+      return;
+    }
+    Map<String, dynamic> data = Map<String, dynamic>.from(raw);
     final sortData = data.entries.toList()..sort((a, b) => b.value['date'].length.compareTo(a.value['date'].length));
     data = Map.fromEntries(sortData);
 
@@ -345,7 +351,7 @@ class CalendarController extends StateNotifier<CalendarState> {
       Map<String, dynamic> modelMap = i.value;
       modelMap['date'] = List<String>.from(modelMap['date']);
       modelMap['id'] = i.key;
-      ScheduleModel model = ScheduleModel.fromMap(i.value);
+      ScheduleModel model = ScheduleModel.fromMap(modelMap);
       result.add(model);
     }
 
@@ -374,12 +380,9 @@ class CalendarController extends StateNotifier<CalendarState> {
       await loadSchedule();
       await loadDailySchedule();
       Map<String, dynamic> search = state.searchSchedule;
+      // 순회 중 같은 리스트를 remove 하면 ConcurrentModificationError → removeWhere로 일괄 제거
       for (var i in search.entries) {
-        for (var model in i.value) {
-          if (model.id == state.schedule.id) {
-            search[i.key].remove(model);
-          }
-        }
+        (i.value as List).removeWhere((model) => model.id == state.schedule.id);
       }
       state = state.copyWith(searchSchedule: search);
     } catch (e) {

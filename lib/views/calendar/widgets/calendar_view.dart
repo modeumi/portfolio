@@ -86,7 +86,7 @@ class _CalendarViewState extends ConsumerState<CalendarView> with RiverpodMixin 
         }
         int rowIndex = firstDate.weekday == 7 ? 0 : firstDate.weekday;
 
-        int titleByte = utf8.encode(i['model'].title).length;
+        int titleByte = utf8.encode(i['model'].title ?? '').length;
 
         int elementHeight = i['date'].length > 1
             ? 25

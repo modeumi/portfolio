@@ -9,7 +9,7 @@ import 'package:portfolio/core/widgets/custom_text_field.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
 import 'package:utility/loading_indicator.dart';
-import 'package:utility/modal_widget.dart';
+import 'package:portfolio/core/widgets/app_modal.dart';
 import 'package:utility/textstyle.dart';
 
 class CalendarDaliySchedulePage extends ConsumerStatefulWidget {
@@ -107,6 +107,14 @@ class _CalendarDaliySchedulePageState extends ConsumerState<CalendarDaliySchedul
                         Expanded(child: Text('음력 ${date_to_string_MMdd('kor', calendarState.lunarDate)}', style: grey(15, FontWeight.w600))),
                         InkWell(
                           onTap: () {
+                            if (!layoutState.admin) {
+                              showDialog(
+                                context: context,
+                                builder: (context) =>
+                                    ModalWidget(width: 300, title: '권한', action: () {}, content: '해당 동작을 위한 권한이 없습니다.', select_button: true),
+                              );
+                              return;
+                            }
                             calendarController.changeEdit(false);
                             calendarController.initAddSchedule();
                             context.push('/calendar_add_schedule');

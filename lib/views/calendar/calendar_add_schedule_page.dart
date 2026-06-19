@@ -10,7 +10,7 @@ import 'package:portfolio/views/calendar/widgets/calendar_builder.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
-import 'package:utility/modal_widget.dart';
+import 'package:portfolio/core/widgets/app_modal.dart';
 import 'package:utility/textstyle.dart';
 
 class CalendarAddSchedulePage extends ConsumerStatefulWidget {
@@ -518,13 +518,16 @@ class _CalendarAddSchedulePageState extends ConsumerState<CalendarAddSchedulePag
 
                               Map<String, dynamic> data = {'title': title.text, 'note': note.text};
                               if (calendarState.edit) {
+                                // 새 일정 생성 후 기존 일정 삭제 — 도중 실패 시 데이터 손실 대신 중복으로 안전
                                 await layoutController.withLoading(() async {
+                                  await calendarController.addSchedule(data);
                                   await calendarController.deleteSchedule();
                                 });
+                              } else {
+                                await layoutController.withLoading(() async {
+                                  await calendarController.addSchedule(data);
+                                });
                               }
-                              layoutController.withLoading(() async {
-                                await calendarController.addSchedule(data);
-                              });
                               if (!context.mounted) return;
                               if (calendarState.edit) {
                                 context.pop();
