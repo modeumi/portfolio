@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:portfolio/core/app_colors.dart';
 import 'package:portfolio/core/app_setting.dart';
 import 'package:portfolio/controllers/login_controller.dart';
-import 'package:utility/color.dart';
 import 'package:utility/textstyle.dart';
 
 class FieldLayout extends ConsumerStatefulWidget {
@@ -41,8 +40,7 @@ class _FieldLayoutState extends ConsumerState<FieldLayout> {
                           style: black(22, FontWeight.w600),
                           children: [
                             TextSpan(text: '강호중', style: custom(25, FontWeight.w800, secondary)),
-                            TextSpan(text: '\'s'),
-                            TextSpan(text: ' Portfolio'),
+                            TextSpan(text: "'s Portfolio"),
                           ],
                         ),
                       ),
