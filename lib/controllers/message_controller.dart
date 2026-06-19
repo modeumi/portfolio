@@ -11,7 +11,7 @@ import 'package:utility/crypto.dart';
 import 'package:utility/fire_base.dart';
 import 'package:utility/format.dart';
 import 'package:utility/import_package.dart' hide ImageSource;
-import 'package:utility/modal_widget.dart';
+import 'package:portfolio/core/widgets/app_modal.dart';
 
 class MessageState {
   final bool loading;
@@ -226,6 +226,15 @@ class MessageController extends StateNotifier<MessageState> {
         }
         models.add(model);
       }
+      // 최근 대화가 위로 오도록 마지막 메시지 날짜 내림차순 정렬(날짜 없는 항목은 뒤로)
+      models.sort((a, b) {
+        final ad = a.lastDate;
+        final bd = b.lastDate;
+        if (ad == null && bd == null) return 0;
+        if (ad == null) return 1;
+        if (bd == null) return -1;
+        return DateTime.parse(bd).compareTo(DateTime.parse(ad));
+      });
       state = state.copyWith(targets: models);
     } catch (e) {
       debugPrint('요청에러 $e');

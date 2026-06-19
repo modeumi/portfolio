@@ -7,7 +7,7 @@ import 'package:portfolio/models/message_target_model.dart';
 
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
-import 'package:utility/modal_widget.dart';
+import 'package:portfolio/core/widgets/app_modal.dart';
 import 'package:utility/textstyle.dart';
 
 class MessageThumnail extends ConsumerStatefulWidget {
@@ -32,7 +32,7 @@ class _MessageThumnailState extends ConsumerState<MessageThumnail> with Riverpod
         password.clear();
         messageController.enteredPassword = '';
 
-        if (widget.model.lock! && !layoutState.admin) {
+        if ((widget.model.lock ?? false) && !layoutState.admin) {
           bool validPassword = true;
           layoutController.changeDialogState(true);
           showDialog(
@@ -96,14 +96,14 @@ class _MessageThumnailState extends ConsumerState<MessageThumnail> with Riverpod
             Row(
               spacing: 10,
               children: [
-                Text(widget.model.name!, style: black(20, FontWeight.w700)),
-                if (widget.model.lock!) Icon(Icons.lock, color: color_grey, size: 20),
+                Text(widget.model.name ?? '', style: black(20, FontWeight.w700)),
+                if (widget.model.lock ?? false) Icon(Icons.lock, color: color_grey, size: 20),
                 Spacer(),
-                Text(date_to_string_yyyyMMdd('kor', widget.model.lastDate), style: grey(18, FontWeight.w500)),
+                Text(widget.model.lastDate == null ? '' : date_to_string_yyyyMMdd('kor', widget.model.lastDate), style: grey(18, FontWeight.w500)),
               ],
             ),
             Text(
-              widget.model.lock! ? '비공개 채팅입니다.' : widget.model.lastContent!,
+              (widget.model.lock ?? false) ? '비공개 채팅입니다.' : (widget.model.lastContent ?? ''),
               style: grey(18, FontWeight.w500),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

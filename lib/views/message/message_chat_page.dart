@@ -8,7 +8,7 @@ import 'package:portfolio/views/message/widgets/message_field.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
-import 'package:utility/modal_widget.dart';
+import 'package:portfolio/core/widgets/app_modal.dart';
 import 'package:utility/textstyle.dart';
 
 class MessageChatPage extends ConsumerStatefulWidget {
@@ -153,6 +153,7 @@ class _MessageChatPageState extends ConsumerState<MessageChatPage> with Riverpod
       final bool ok = await _verifyPassword();
       if (!ok) return;
     }
+    if (!mounted) return;
     final String url = await messageController.imagePickAndUpload(context);
     if (url == '') return;
     await _send(url, clearOnSuccess: false);
