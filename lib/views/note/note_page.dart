@@ -77,7 +77,7 @@ class _NotePageState extends ConsumerState<NotePage> with RiverpodMixin {
                                   isExpanded: false,
                                   items: [
                                     for (var e in sort.entries)
-                                      DropdownMenuItem(
+                                      DropdownItem(
                                         value: e.key,
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,

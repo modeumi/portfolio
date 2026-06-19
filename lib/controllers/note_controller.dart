@@ -80,7 +80,7 @@ class NoteController extends StateNotifier<NoteState> {
   }
 
   // 작성된 노트 저장 -> 5초마다 자동저장
-  void saveNote() async {
+  Future<void> saveNote() async {
     if (!state.isChange) return;
     state = state.copyWith(isSaving: true, isChange: false);
     DateTime now = DateTime.now();
@@ -160,6 +160,8 @@ class NoteController extends StateNotifier<NoteState> {
   }
 
   Future<void> deleteNote() async {
+    // 삭제 후 pop 시점 자동저장(set merge)이 삭제된 노트를 되살리지 않도록 변경 플래그 해제
+    state = state.copyWith(isChange: false);
     await store.collection('Note').doc(state.note.id).delete();
     await getNotes();
   }

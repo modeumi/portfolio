@@ -9,7 +9,7 @@ import 'package:portfolio/core/widgets/custom_text_field.dart';
 import 'package:utility/color.dart';
 import 'package:utility/format.dart';
 import 'package:utility/import_package.dart';
-import 'package:utility/modal_widget.dart';
+import 'package:portfolio/core/widgets/app_modal.dart';
 import 'package:utility/textstyle.dart';
 import 'package:utility/toast_message.dart';
 import 'package:web/web.dart' as web;
@@ -54,12 +54,12 @@ class _NoteWritePageState extends ConsumerState<NoteWritePage> with RiverpodMixi
     web.window.navigator.clipboard.writeText(text);
   }
 
-  List<DropdownMenuItem<String>> dropdownItems() {
-    List<DropdownMenuItem<String>> widget = [];
+  List<DropdownItem<String>> dropdownItems() {
+    List<DropdownItem<String>> widget = [];
 
     for (var item in menus.entries) {
       if (item.key == 'icon') {
-        DropdownMenuItem<String> row = DropdownMenuItem<String>(
+        DropdownItem<String> row = DropdownItem<String>(
           value: item.key,
           child: DottedBorder(
             options: CustomPathDottedBorderOptions(
@@ -139,7 +139,7 @@ class _NoteWritePageState extends ConsumerState<NoteWritePage> with RiverpodMixi
         widget.add(row);
       } else {
         for (var mainItem in item.value) {
-          DropdownMenuItem<String> mainWidget = DropdownMenuItem<String>(
+          DropdownItem<String> mainWidget = DropdownItem<String>(
             value: mainItem,
             child: GestureDetector(
               onTap: () {
@@ -204,7 +204,7 @@ class _NoteWritePageState extends ConsumerState<NoteWritePage> with RiverpodMixi
           isSearch = false;
         }
         layoutController.withLoading(() async {
-          noteController.saveNote();
+          await noteController.saveNote();
           await noteController.getNotes();
         });
         if (didPop && !isSearch) return;
@@ -371,6 +371,9 @@ class _NoteWritePageState extends ConsumerState<NoteWritePage> with RiverpodMixi
 }
 
 List<String> splitAndKeep(String source, String pattern) {
-  final regex = RegExp('(?=$pattern)|(?<=$pattern)');
+  // 빈 검색어는 분할하지 않고, 정규식 메타문자는 이스케이프해 FormatException 크래시 방지
+  if (pattern.isEmpty) return [source];
+  final escaped = RegExp.escape(pattern);
+  final regex = RegExp('(?=$escaped)|(?<=$escaped)');
   return source.split(regex);
 }
